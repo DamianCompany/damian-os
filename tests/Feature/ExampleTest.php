@@ -16,4 +16,19 @@ class ExampleTest extends TestCase
 
         $response->assertRedirect(route('filament.admin.auth.login'));
     }
+
+    public function test_assets_use_https_behind_a_trusted_proxy(): void
+    {
+        $response = $this
+            ->withHeaders([
+                'X-Forwarded-Host' => 'os.damiancompany.com.pe',
+                'X-Forwarded-Port' => '443',
+                'X-Forwarded-Proto' => 'https',
+            ])
+            ->get('/admin/login');
+
+        $response
+            ->assertOk()
+            ->assertSee('https://os.damiancompany.com.pe/build/assets/', false);
+    }
 }
