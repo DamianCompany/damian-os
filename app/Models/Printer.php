@@ -14,10 +14,7 @@ class Printer extends Model
     protected $fillable = [
         'name',
         'location',
-        'model',
         'status',
-        'responsible_name',
-        'next_maintenance_at',
         'is_active',
     ];
 
@@ -25,7 +22,6 @@ class Printer extends Model
     {
         return [
             'is_active' => 'boolean',
-            'next_maintenance_at' => 'date',
         ];
     }
 }

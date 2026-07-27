@@ -5,6 +5,7 @@ namespace App\Filament\Resources\DamiOrders;
 use App\Filament\Resources\DamiOrders\Pages\CreateDamiOrder;
 use App\Filament\Resources\DamiOrders\Pages\EditDamiOrder;
 use App\Filament\Resources\DamiOrders\Pages\ListDamiOrders;
+use App\Filament\Resources\DamiOrders\Pages\ViewDamiOrder;
 use App\Filament\Resources\DamiOrders\Schemas\DamiOrderForm;
 use App\Filament\Resources\DamiOrders\Tables\DamiOrdersTable;
 use App\Models\DamiOrder;
@@ -80,6 +81,7 @@ class DamiOrderResource extends Resource
         return [
             'index' => ListDamiOrders::route('/'),
             'create' => CreateDamiOrder::route('/create'),
+            'view' => ViewDamiOrder::route('/{record}'),
             'edit' => EditDamiOrder::route('/{record}/edit'),
         ];
     }
