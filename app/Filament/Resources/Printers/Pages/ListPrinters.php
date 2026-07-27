@@ -12,13 +12,18 @@ class ListPrinters extends ListRecords
 
     public function getSubheading(): ?string
     {
-        return 'Administra el inventario de equipos. El responsable se asignará en cada pedido, no en la impresora.';
+        return auth()->user()?->role === 'gerencia'
+            ? 'Administra el inventario de equipos y su ubicación.'
+            : 'Consulta la ubicación y disponibilidad actual de los equipos.';
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Agregar impresora')->icon('heroicon-o-plus'),
+            CreateAction::make()
+                ->label('Agregar impresora')
+                ->icon('heroicon-o-plus')
+                ->visible(fn (): bool => auth()->user()?->role === 'gerencia'),
         ];
     }
 }

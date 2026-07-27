@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class PrinterResource extends Resource
 {
@@ -40,6 +41,26 @@ class PrinterResource extends Resource
     public static function table(Table $table): Table
     {
         return PrintersTable::configure($table);
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->role === 'gerencia';
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()?->role === 'gerencia';
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()?->role === 'gerencia';
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->role === 'gerencia';
     }
 
     public static function getRelations(): array

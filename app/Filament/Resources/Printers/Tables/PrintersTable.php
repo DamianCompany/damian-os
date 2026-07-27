@@ -60,7 +60,9 @@ class PrintersTable
             ->emptyStateHeading('Aún no hay impresoras')
             ->emptyStateDescription('Agrega la primera indicando solo su nombre y ubicación.')
             ->recordActions([
-                EditAction::make()->label('Editar'),
+                EditAction::make()
+                    ->label('Editar')
+                    ->visible(fn (): bool => auth()->user()?->role === 'gerencia'),
             ]);
     }
 }
