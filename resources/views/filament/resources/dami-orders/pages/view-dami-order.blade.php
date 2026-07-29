@@ -90,7 +90,19 @@
                     <div><span>Entrega</span><strong>{{ $order->delivery_date?->format('d/m/Y') }}</strong></div>
                 </div>
                 <dl class="damian-order-data mt-5">
-                    <div><dt>Tiempo de impresión</dt><dd>{{ number_format((float) $order->print_hours, 2) }} h</dd></div>
+                    <div>
+                        <dt>Tiempo de impresión</dt>
+                        <dd>
+                            {{ number_format((int) $order->print_minutes) }} min
+
+                            @if ($order->print_minutes >= 60)
+                                <span class="text-[#65738a] dark:text-[#99a5b5]">
+                                    ({{ intdiv((int) $order->print_minutes, 60) }} h
+                                    {{ (int) $order->print_minutes % 60 }} min)
+                                </span>
+                            @endif
+                        </dd>
+                    </div>
                     <div><dt>Tiempo de postproceso</dt><dd>{{ $order->postprocess_hours !== null ? number_format((float) $order->postprocess_hours, 2).' h' : 'Pendiente de completar' }}</dd></div>
                 </dl>
             </section>

@@ -37,7 +37,7 @@ class DamiOrderFactory extends Factory
                 'ABS',
             ]),
 
-            'print_hours' => fake()->randomFloat(2, 1, 100),
+            'print_minutes' => fake()->numberBetween(15, 6000),
             'postprocess_hours' => null,
 
             'electricity_cost' => fake()->randomFloat(2, 0, 100),

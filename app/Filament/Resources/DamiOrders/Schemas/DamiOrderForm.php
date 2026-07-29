@@ -192,12 +192,14 @@ class DamiOrderForm
                                     ->options(['PLA' => 'PLA', 'PETG' => 'PETG', 'ABS' => 'ABS'])
                                     ->native(false)
                                     ->required(),
-                                TextInput::make('print_hours')
+                                TextInput::make('print_minutes')
+                                    ->helperText('Ingresa el tiempo total estimado en minutos')
                                     ->label('Tiempo de impresión')
                                     ->numeric()
+                                    ->integer()
                                     ->minValue(0)
                                     ->maxValue(10000)
-                                    ->suffix('h')
+                                    ->suffix('min')
                                     ->default(0)
                                     ->required(),
                                 TextInput::make('postprocess_hours')
