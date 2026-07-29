@@ -17,7 +17,7 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Carbon;
-
+use Filament\Forms\Components\Toggle;
 class DamiOrderForm
 {
     private static function recalculate(Get $get, Set $set): void
@@ -65,6 +65,12 @@ class DamiOrderForm
                                     ->selectablePlaceholder(false)
                                     ->required(),
                             ]),
+                            Toggle::make(requires_invoice)
+                                ->label('Requiere facura')
+                                ->helperText('Activa cuando el pedido deba pasar por facturación')
+                                ->default(false)
+                                ->inline(false)
+                                ->live(),
                             Grid::make(['default' => 1, 'md' => 2])->schema([
                                 TextInput::make('client_name')
                                     ->label('Nombres / Razón social')
@@ -76,9 +82,12 @@ class DamiOrderForm
                                     ->placeholder('Opcional')
                                     ->nullable()
                                     ->numeric()
-                                    ->rule('regex:/^(?:\d{8}|\d{11})$/')
+                                    ->rules(fn (Get $get): array => $get('requires_invoice')
+                                        ? ['required', 'regex:/^\d{11}$/']
+                                        : ['nullable', 'regex:/^(?:\d{8}|\d{11})$/'])
                                     ->validationMessages([
-                                        'regex' => 'Ingresa un DNI de 8 dígitos o un RUC de 11 dígitos.',
+                                        'required' => 'Ingresa el RUC para emitir la factura.',
+                                        'regex' => 'Para facturación debes ingresar un RUC válido de 11 dígitos.',
                                     ]),
                             ]),
                             Textarea::make('description')

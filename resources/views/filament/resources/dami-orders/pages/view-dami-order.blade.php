@@ -52,6 +52,21 @@
                 <dl class="damian-order-data">
                     <div><dt>Cliente / Razón social</dt><dd>{{ $order->client_name }}</dd></div>
                     <div><dt>DNI / RUC</dt><dd>{{ $order->client_document ?: 'No registrado'}}</dd></div>
+                    <div>
+                        <dt>Facturación</dt>
+
+                        <dd>
+                            @if ($order->requires_invoice)
+                                <span class="font-semibold text-[#22a15e]">
+                                    Requiere factura
+                                </span>
+                            @else
+                                <span class="text-[#65738a] dark:text-[#99a5b5]">
+                                    No requiere factura
+                                </span>
+                            @endif
+                        </dd>
+                    </div>
                     <div><dt>Cantidad</dt><dd>{{ $order->quantity }} unidades</dd></div>
                     <div><dt>Estado operativo</dt><dd>{{ $status['label'] }}</dd></div>
                 </dl>

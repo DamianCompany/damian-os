@@ -22,6 +22,7 @@ class DamiOrder extends Model
             'start_date' => 'date',
             'end_date' => 'date',
             'delivery_date' => 'date',
+            'requires_invoice' => 'boolean',
         ];
     }
 

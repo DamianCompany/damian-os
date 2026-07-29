@@ -11,6 +11,7 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\IconColumn;
 
 class DamiOrdersTable
 {
@@ -25,6 +26,7 @@ class DamiOrdersTable
                     ->searchable()
                     ->limit(42)
                     ->tooltip(fn ($record): string => $record->description),
+                IconColumn::male('requires_invoice')->label('Factura')->boolean()->trueIcon('heroicon-o-document-check')->falseIcon('heroicon-o-minus-circle')->trueColor('success')->falseColor('gray')->alignCenter(),
                 TextColumn::make('quantity')->label('Cant.')->alignCenter(),
                 TextColumn::make('filament_type')->label('Material')->badge(),
                 TextColumn::make('total_price')->label('Total')->money('PEN')->sortable(),
@@ -48,6 +50,12 @@ class DamiOrdersTable
                     'in_progress' => 'En proceso',
                     'completed' => 'Completado',
                 ]),
+                SelectFilter::make('requires_invoice')
+                    ->label('Facturación')
+                    ->option([
+                        '1' => 'Requiere factura',
+                        '0' => 'No requiere factura',
+                    ])
             ])
             ->defaultSort('created_at', 'desc')
             ->recordUrl(fn ($record): string => DamiOrderResource::getUrl('view', ['record' => $record]))
