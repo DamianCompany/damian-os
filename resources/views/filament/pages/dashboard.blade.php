@@ -1,6 +1,114 @@
 <x-filament-panels::page>
     <div class="damian-dashboard space-y-6">
-        @if ($isSupervisor)
+        @if ($isInvestigaSupervisor)
+            <section class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <h1 class="text-3xl font-semibold tracking-[-.04em] text-[#152036] dark:text-[#f3f3f3]">
+                        InvestigaLab
+                    </h1>
+                    <p class="mt-2 text-base text-[#65738a] dark:text-[#99a5b5]">
+                        Hola, <strong class="font-semibold text-[#168fdd] dark:text-[#31bae4]">{{ auth()->user()->name }}</strong>.
+                        Revisa las iniciativas del área sin perder de vista lo próximo.
+                    </p>
+                </div>
+
+                <a href="{{ $urls['crearSolicitudInvestiga'] }}" class="damian-dashboard__action damian-dashboard__action--primary">
+                    <x-filament::icon icon="heroicon-o-plus" class="size-5" />
+                    Nueva idea
+                </a>
+            </section>
+
+            <section class="grid gap-4 md:grid-cols-3" aria-label="Resumen de InvestigaLab">
+                @foreach ($investigaResumen as $indicador)
+                    <article class="damian-supervisor-stat">
+                        <span @class([
+                            'damian-supervisor-stat__icon',
+                            'text-[#1bb1e3] bg-[#1bb1e3]/10' => $indicador['tone'] === 'blue',
+                            'text-[#1a4e5c] bg-[#1a4e5c]/10 dark:text-[#31bae4]' => $indicador['tone'] === 'teal',
+                            'text-[#22a15e] bg-[#22a15e]/10' => $indicador['tone'] === 'green',
+                        ])>
+                            <x-filament::icon :icon="$indicador['icon']" class="size-6" />
+                        </span>
+                        <div>
+                            <p>{{ $indicador['label'] }}</p>
+                            <strong>{{ $indicador['count'] }}</strong>
+                            <span>{{ $indicador['detail'] }}</span>
+                        </div>
+                    </article>
+                @endforeach
+            </section>
+
+            <div class="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(18rem,.65fr)]">
+                <section class="damian-panel min-w-0">
+                    <div class="damian-panel__header">
+                        <h2>Ideas recientes</h2>
+                        <a href="{{ $urls['solicitudesInvestiga'] }}" class="damian-panel__link">Ver todas</a>
+                    </div>
+
+                    @if ($solicitudesRecientes->isEmpty())
+                        <div class="damian-empty">
+                            <x-filament::icon icon="heroicon-o-light-bulb" class="size-8 text-[#1bb1e3]" />
+                            <div>
+                                <p class="font-semibold">Aún no hay ideas registradas</p>
+                                <p class="mt-1 text-sm text-[#65738a] dark:text-[#99a5b5]">La primera solicitud aparecerá aquí.</p>
+                            </div>
+                        </div>
+                    @else
+                        <div class="damian-work-list">
+                            @foreach ($solicitudesRecientes as $solicitud)
+                                <article class="damian-work-row">
+                                    <div class="min-w-0">
+                                        <a href="{{ \App\Filament\Resources\SolicitudesInvestiga\SolicitudInvestigaResource::getUrl('view', ['record' => $solicitud]) }}" class="damian-work-row__order">
+                                            {{ $solicitud->codigo }}
+                                        </a>
+                                        <p class="damian-work-row__client">{{ $solicitud->solicitante }}</p>
+                                    </div>
+                                    <p class="damian-work-row__description">{{ $solicitud->titulo }}</p>
+                                    <div class="damian-work-row__delivery">
+                                        <span>Fecha requerida</span>
+                                        <strong>{{ $solicitud->fecha_requerida?->format('d/m/Y') ?? 'Por definir' }}</strong>
+                                    </div>
+                                    <span class="damian-status">
+                                        {{ \App\Filament\Resources\SolicitudesInvestiga\Tables\TablaSolicitudesInvestiga::etiquetaEstado($solicitud->estado) }}
+                                    </span>
+                                    <a href="{{ \App\Filament\Resources\SolicitudesInvestiga\SolicitudInvestigaResource::getUrl('view', ['record' => $solicitud]) }}" class="damian-work-row__action">
+                                        Ver ficha
+                                        <x-filament::icon icon="heroicon-o-arrow-right" class="size-4" />
+                                    </a>
+                                </article>
+                            @endforeach
+                        </div>
+                    @endif
+                </section>
+
+                <section class="damian-panel">
+                    <div class="damian-panel__header">
+                        <h2>Fechas próximas</h2>
+                    </div>
+
+                    <div class="damian-deadlines">
+                        @forelse ($fechasProximasInvestiga as $solicitud)
+                            <a href="{{ \App\Filament\Resources\SolicitudesInvestiga\SolicitudInvestigaResource::getUrl('view', ['record' => $solicitud]) }}">
+                                <span class="damian-deadlines__icon">
+                                    <x-filament::icon icon="heroicon-o-calendar-days" class="size-5" />
+                                </span>
+                                <span class="min-w-0 flex-1">
+                                    <strong>{{ \Illuminate\Support\Str::limit($solicitud->titulo, 36) }}</strong>
+                                    <small>{{ $solicitud->solicitante }}</small>
+                                </span>
+                                <span class="damian-deadlines__date">
+                                    <strong>{{ $solicitud->fecha_requerida->format('d/m/Y') }}</strong>
+                                </span>
+                            </a>
+                        @empty
+                            <div class="damian-empty damian-empty--compact">
+                                <p class="font-semibold">Sin fechas próximas</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </section>
+            </div>
+        @elseif ($isSupervisor)
             <section class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                     <p class="text-base text-[#65738a] dark:text-[#99a5b5]">
@@ -174,51 +282,103 @@
             </div>
         </section>
 
-        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Indicadores principales">
-            <article class="damian-metric">
-                <div class="damian-metric__icon bg-[#1bb1e3]/10 text-[#168fdd] dark:text-[#31bae4]">
-                    <x-filament::icon icon="heroicon-o-clipboard-document-list" class="size-6" />
+        <section class="grid gap-6 xl:grid-cols-2" aria-label="Resumen por áreas">
+            <article class="damian-panel border-t-2 border-t-[#1bb1e3]">
+                <div class="damian-panel__header">
+                    <div class="flex items-center gap-3">
+                        <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-[#1bb1e3]/10 text-[#1bb1e3]">
+                            <x-filament::icon icon="heroicon-o-cube" class="size-6" />
+                        </span>
+                        <div>
+                            <h2>DAMI 3D</h2>
+                            <p>Producción, pedidos e impresoras del área.</p>
+                        </div>
+                    </div>
+                    <a href="{{ $urls['orders'] }}" class="damian-panel__link">Consultar área</a>
                 </div>
-                <div>
-                    <p class="damian-metric__label">Pedidos activos</p>
-                    <p class="damian-metric__value">{{ $activeOrders }}</p>
-                    <p class="damian-metric__detail">Pendientes o en atención</p>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#1bb1e3]/10 text-[#168fdd] dark:text-[#31bae4]">
+                            <x-filament::icon icon="heroicon-o-clipboard-document-list" class="size-6" />
+                        </span>
+                        <div><p>Pedidos activos</p><strong>{{ $activeOrders }}</strong><span>Pendientes o en atención</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#22a15e]/10 text-[#22a15e]">
+                            <x-filament::icon icon="heroicon-o-chart-bar-square" class="size-6" />
+                        </span>
+                        <div><p>Avance general</p><strong>{{ $completionRate }}%</strong><span>Pedidos completados</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#1a4e5c]/10 text-[#1a4e5c] dark:bg-[#31bae4]/10 dark:text-[#31bae4]">
+                            <x-filament::icon icon="heroicon-o-printer" class="size-6" />
+                        </span>
+                        <div><p>Impresoras</p><strong>{{ $availablePrinters }} / {{ $totalPrinters }}</strong><span>Disponibles</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                            <x-filament::icon icon="heroicon-o-bell-alert" class="size-6" />
+                        </span>
+                        <div><p>Atención</p><strong>{{ $attentionCount }}</strong><span>Alertas activas</span></div>
+                    </article>
                 </div>
             </article>
 
-            <article class="damian-metric">
-                <div class="damian-metric__icon bg-[#22a15e]/10 text-[#22a15e]">
-                    <x-filament::icon icon="heroicon-o-chart-bar-square" class="size-6" />
+            <article class="damian-panel border-t-2 border-t-[#22a15e]">
+                <div class="damian-panel__header">
+                    <div class="flex items-center gap-3">
+                        <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-[#22a15e]/10 text-[#22a15e]">
+                            <x-filament::icon icon="heroicon-o-beaker" class="size-6" />
+                        </span>
+                        <div>
+                            <h2>InvestigaLab</h2>
+                            <p>Ideas, evaluaciones y proyectos de investigación.</p>
+                        </div>
+                    </div>
+                    <a href="{{ $investiga['url'] }}" class="damian-panel__link">Consultar área</a>
                 </div>
-                <div>
-                    <p class="damian-metric__label">Avance general</p>
-                    <p class="damian-metric__value">{{ $completionRate }}%</p>
-                    <p class="damian-metric__detail">Pedidos completados</p>
-                </div>
-            </article>
 
-            <article class="damian-metric">
-                <div class="damian-metric__icon bg-[#1a4e5c]/10 text-[#1a4e5c] dark:bg-[#31bae4]/10 dark:text-[#31bae4]">
-                    <x-filament::icon icon="heroicon-o-printer" class="size-6" />
-                </div>
-                <div>
-                    <p class="damian-metric__label">Impresoras disponibles</p>
-                    <p class="damian-metric__value">{{ $availablePrinters }} / {{ $totalPrinters }}</p>
-                    <p class="damian-metric__detail">Equipos listos para asignar</p>
-                </div>
-            </article>
-
-            <article class="damian-metric">
-                <div class="damian-metric__icon bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                    <x-filament::icon icon="heroicon-o-bell-alert" class="size-6" />
-                </div>
-                <div>
-                    <p class="damian-metric__label">Requieren atención</p>
-                    <p class="damian-metric__value">{{ $attentionCount }}</p>
-                    <p class="damian-metric__detail">Tipos de alerta activos</p>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#1bb1e3]/10 text-[#1bb1e3]">
+                            <x-filament::icon icon="heroicon-o-light-bulb" class="size-6" />
+                        </span>
+                        <div><p>Ideas</p><strong>{{ $investiga['ideas'] }}</strong><span>Registradas</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-amber-500/10 text-amber-500">
+                            <x-filament::icon icon="heroicon-o-magnifying-glass" class="size-6" />
+                        </span>
+                        <div><p>Evaluación</p><strong>{{ $investiga['evaluacion'] }}</strong><span>En revisión</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#22a15e]/10 text-[#22a15e]">
+                            <x-filament::icon icon="heroicon-o-beaker" class="size-6" />
+                        </span>
+                        <div><p>Proyectos activos</p><strong>{{ $investiga['activos'] }}</strong><span>En desarrollo</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#1a4e5c]/10 text-[#1a4e5c] dark:text-[#31bae4]">
+                            <x-filament::icon icon="heroicon-o-rectangle-stack" class="size-6" />
+                        </span>
+                        <div><p>Total</p><strong>{{ $investiga['total'] }}</strong><span>Solicitudes</span></div>
+                    </article>
                 </div>
             </article>
         </section>
+
+        <div class="flex items-end justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-semibold tracking-[-.025em] text-[#152036] dark:text-[#f3f3f3]">
+                    Seguimiento DAMI 3D
+                </h2>
+                <p class="mt-1 text-sm text-[#65738a] dark:text-[#99a5b5]">
+                    Pedidos, alertas y disponibilidad operativa del área.
+                </p>
+            </div>
+            <a href="{{ $urls['orders'] }}" class="damian-panel__link">Ver DAMI 3D</a>
+        </div>
 
         <div class="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,.55fr)]">
             <section class="damian-panel min-w-0">

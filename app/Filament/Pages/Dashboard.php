@@ -4,9 +4,11 @@ namespace App\Filament\Pages;
 
 use App\Filament\Resources\DamiOrders\DamiOrderResource;
 use App\Filament\Resources\Printers\PrinterResource;
+use App\Filament\Resources\SolicitudesInvestiga\SolicitudInvestigaResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\DamiOrder;
 use App\Models\Printer;
+use App\Models\SolicitudInvestiga;
 use App\Models\User;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Support\Icons\Heroicon;
@@ -26,13 +28,19 @@ class Dashboard extends BaseDashboard
 
     public function getTitle(): string|Htmlable
     {
-        return auth()->user()?->role === 'dami_3d'
-            ? 'Panel DAMI 3D'
-            : 'Panel de Gerencia';
+        return match (auth()->user()?->role) {
+            'dami_3d' => 'Panel DAMI 3D',
+            'investiga_lab' => 'Panel InvestigaLab',
+            default => 'Panel de Gerencia',
+        };
     }
 
     protected function getViewData(): array
     {
+        if (auth()->user()?->role === 'investiga_lab') {
+            return $this->getInvestigaViewData();
+        }
+
         $orders = DamiOrder::query();
         $pendingStatuses = ['pending'];
         $inProgressStatuses = ['in_progress'];
@@ -97,6 +105,7 @@ class Dashboard extends BaseDashboard
 
         return [
             'isSupervisor' => auth()->user()?->role === 'dami_3d',
+            'isInvestigaSupervisor' => false,
             'activeOrders' => $activeOrders,
             'completionRate' => $completionRate,
             'totalPrinters' => $totalPrinters,
@@ -115,6 +124,13 @@ class Dashboard extends BaseDashboard
                 ->limit(4)
                 ->get(),
             'alerts' => $alerts,
+            'investiga' => [
+                'ideas' => SolicitudInvestiga::query()->where('estado', 'idea_registrada')->count(),
+                'evaluacion' => SolicitudInvestiga::query()->where('estado', 'en_evaluacion')->count(),
+                'activos' => SolicitudInvestiga::query()->where('estado', 'proyecto_activo')->count(),
+                'total' => SolicitudInvestiga::query()->count(),
+                'url' => SolicitudInvestigaResource::getUrl(),
+            ],
             'urls' => [
                 'orders' => DamiOrderResource::getUrl(),
                 'createOrder' => DamiOrderResource::getUrl('create'),
@@ -123,6 +139,53 @@ class Dashboard extends BaseDashboard
                 ])),
                 'printers' => PrinterResource::getUrl(),
                 'createCredential' => UserResource::getUrl('create'),
+            ],
+        ];
+    }
+
+    protected function getInvestigaViewData(): array
+    {
+        $solicitudes = SolicitudInvestiga::query();
+
+        return [
+            'isSupervisor' => false,
+            'isInvestigaSupervisor' => true,
+            'investigaResumen' => [
+                [
+                    'label' => 'Ideas registradas',
+                    'detail' => 'Pendientes de revisión',
+                    'count' => (clone $solicitudes)->where('estado', 'idea_registrada')->count(),
+                    'icon' => 'heroicon-o-light-bulb',
+                    'tone' => 'blue',
+                ],
+                [
+                    'label' => 'En evaluación',
+                    'detail' => 'Revisando factibilidad',
+                    'count' => (clone $solicitudes)->where('estado', 'en_evaluacion')->count(),
+                    'icon' => 'heroicon-o-magnifying-glass',
+                    'tone' => 'teal',
+                ],
+                [
+                    'label' => 'Proyectos activos',
+                    'detail' => 'Aprobados para trabajar',
+                    'count' => (clone $solicitudes)->where('estado', 'proyecto_activo')->count(),
+                    'icon' => 'heroicon-o-beaker',
+                    'tone' => 'green',
+                ],
+            ],
+            'solicitudesRecientes' => SolicitudInvestiga::query()
+                ->latest()
+                ->limit(5)
+                ->get(),
+            'fechasProximasInvestiga' => SolicitudInvestiga::query()
+                ->whereNotNull('fecha_requerida')
+                ->whereNotIn('estado', ['cerrado'])
+                ->orderBy('fecha_requerida')
+                ->limit(5)
+                ->get(),
+            'urls' => [
+                'solicitudesInvestiga' => SolicitudInvestigaResource::getUrl(),
+                'crearSolicitudInvestiga' => SolicitudInvestigaResource::getUrl('create'),
             ],
         ];
     }
