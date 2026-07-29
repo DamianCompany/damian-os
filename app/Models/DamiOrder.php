@@ -23,6 +23,7 @@ class DamiOrder extends Model
             'end_date' => 'date',
             'delivery_date' => 'date',
             'requires_invoice' => 'boolean',
+            'print_minutes' =>'integer',
         ];
     }
 
