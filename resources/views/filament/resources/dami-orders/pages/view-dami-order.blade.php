@@ -51,7 +51,7 @@
                 </div>
                 <dl class="damian-order-data">
                     <div><dt>Cliente / Razón social</dt><dd>{{ $order->client_name }}</dd></div>
-                    <div><dt>DNI / RUC</dt><dd>{{ $order->client_document }}</dd></div>
+                    <div><dt>DNI / RUC</dt><dd>{{ $order->client_document ?: 'No registrado'}}</dd></div>
                     <div><dt>Cantidad</dt><dd>{{ $order->quantity }} unidades</dd></div>
                     <div><dt>Estado operativo</dt><dd>{{ $status['label'] }}</dd></div>
                 </dl>

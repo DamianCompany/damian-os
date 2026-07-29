@@ -19,7 +19,7 @@ class DamiOrdersTable
         return $table
             ->columns([
                 TextColumn::make('order_number')->label('Orden')->searchable()->sortable()->weight('semibold'),
-                TextColumn::make('client_name')->label('Cliente')->searchable()->description(fn ($record) => $record->client_document),
+                TextColumn::make('client_name')->label('Cliente')->searchable()->description(fn ($record):?string  => filled($record->client_document) ? $record->client_document: null),
                 TextColumn::make('description')
                     ->label('Descripción')
                     ->searchable()

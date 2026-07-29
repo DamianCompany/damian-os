@@ -73,7 +73,8 @@ class DamiOrderForm
                                     ->maxLength(255),
                                 TextInput::make('client_document')
                                     ->label('DNI / RUC')
-                                    ->required()
+                                    ->placeholder('Opcional')
+                                    ->nullable()
                                     ->numeric()
                                     ->rule('regex:/^(?:\d{8}|\d{11})$/')
                                     ->validationMessages([
