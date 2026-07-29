@@ -18,6 +18,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Carbon;
 use Filament\Forms\Components\Toggle;
+
 class DamiOrderForm
 {
     private static function recalculate(Get $get, Set $set): void
@@ -65,7 +66,7 @@ class DamiOrderForm
                                     ->selectablePlaceholder(false)
                                     ->required(),
                             ]),
-                            Toggle::make(requires_invoice)
+                            Toggle::make('requires_invoice')
                                 ->label('Requiere facura')
                                 ->helperText('Activa cuando el pedido deba pasar por facturación')
                                 ->default(false)
