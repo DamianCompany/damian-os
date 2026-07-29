@@ -21,11 +21,7 @@ class DatabaseSeeder extends Seeder
             'password' => 'somosDamian!1',
             'role' => 'gerencia',
             'is_active' => true,
+            'credential_expires_at' => null,
         ]);
-
-        Printer::upsert([
-            ['name' => 'DAMI-3D-01', 'location' => 'Taller principal', 'status' => 'available', 'is_active' => true],
-            ['name' => 'DAMI-3D-02', 'location' => 'Laboratorio de prototipado', 'status' => 'available', 'is_active' => true],
-        ], ['name'], ['location', 'status', 'is_active']);
     }
 }
