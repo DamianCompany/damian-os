@@ -2,7 +2,12 @@
     @php
         $user = auth()->user();
         $displayName = $user->role === 'gerencia' ? 'Gerencia' : $user->name;
-        $roleLabel = $user->role === 'gerencia' ? 'Administración general' : 'Supervisor DAMI 3D';
+        $roleLabel = match ($user->role) {
+            'gerencia' => 'Administración general',
+            'dami_3d' => 'Supervisor DAMI 3D',
+            'investiga_lab' => 'Supervisor InvestigaLab',
+            default => 'Acceso DAMIAN OS',
+        };
     @endphp
 
     <div class="damian-topbar-user" aria-label="Usuario actual">

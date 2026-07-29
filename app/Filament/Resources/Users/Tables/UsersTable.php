@@ -24,8 +24,17 @@ class UsersTable
                 TextColumn::make('role')
                     ->label('Perfil')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => $state === 'gerencia' ? 'Gerencia' : 'Supervisor DAMI 3D')
-                    ->color(fn ($state) => $state === 'gerencia' ? 'info' : 'success'),
+                    ->formatStateUsing(fn ($state): string => match ($state) {
+                        'gerencia' => 'Gerencia',
+                        'dami_3d' => 'Supervisor DAMI 3D',
+                        'investiga_lab' => 'Supervisor InvestigaLab',
+                        default => 'Perfil no reconocido',
+                    })
+                    ->color(fn ($state): string => match ($state) {
+                        'gerencia' => 'info',
+                        'dami_3d', 'investiga_lab' => 'success',
+                        default => 'gray',
+                    }),
                 TextColumn::make('is_active')
                     ->label('Acceso')
                     ->badge()
@@ -42,6 +51,7 @@ class UsersTable
                     ->options([
                         'gerencia' => 'Gerencia',
                         'dami_3d' => 'Supervisor DAMI 3D',
+                        'investiga_lab' => 'Supervisor InvestigaLab',
                     ]),
                 TernaryFilter::make('is_active')
                     ->label('Estado del acceso')

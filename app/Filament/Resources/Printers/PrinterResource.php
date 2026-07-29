@@ -43,6 +43,11 @@ class PrinterResource extends Resource
         return PrintersTable::configure($table);
     }
 
+    public static function canViewAny(): bool
+    {
+        return in_array(auth()->user()?->role, ['gerencia', 'dami_3d'], true);
+    }
+
     public static function canCreate(): bool
     {
         return auth()->user()?->role === 'gerencia';
