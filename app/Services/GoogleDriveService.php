@@ -38,6 +38,56 @@ class GoogleDriveService
         ];
     }
 
+    public function ensureInvestigaSolicitudFolder(string $codigo): array
+    {
+        $solicitudFolder = $this->findOrCreateFolder(
+            $codigo,
+            config('services.google_drive.investiga_root_folder_id'),
+        );
+
+        return [
+            'solicitud' => $solicitudFolder,
+            'adjuntos' => $this->findOrCreateFolder('01 SOLICITUD', $solicitudFolder),
+            'planificacion' => $this->findOrCreateFolder('02 PLANIFICACION', $solicitudFolder),
+            'datos' => $this->findOrCreateFolder('03 DATOS', $solicitudFolder),
+            'experimentos' => $this->findOrCreateFolder('04 EXPERIMENTOS', $solicitudFolder),
+            'resultados' => $this->findOrCreateFolder('05 RESULTADOS', $solicitudFolder),
+        ];
+    }
+
+    /**
+     * Crea únicamente la carpeta inicial para no bloquear el registro.
+     *
+     * @return array{solicitud: string, adjuntos: string}
+     */
+    public function ensureInvestigaInitialFolder(string $codigo): array
+    {
+        $solicitudFolder = $this->findOrCreateFolder(
+            $codigo,
+            config('services.google_drive.investiga_root_folder_id'),
+        );
+
+        return [
+            'solicitud' => $solicitudFolder,
+            'adjuntos' => $this->findOrCreateFolder('01 SOLICITUD', $solicitudFolder),
+        ];
+    }
+
+    public function ensureInvestigaStageFolder(string $solicitudFolderId, string $etapa): string
+    {
+        $nombre = match ($etapa) {
+            'solicitud' => '01 SOLICITUD',
+            'planificacion' => '02 PLANIFICACION',
+            'datos' => '03 DATOS',
+            'experimentos' => '04 EXPERIMENTOS',
+            'resultados' => '05 RESULTADOS',
+            'cierre' => '05 RESULTADOS',
+            default => throw new RuntimeException("Etapa de InvestigaLab no válida: {$etapa}"),
+        };
+
+        return $this->findOrCreateFolder($nombre, $solicitudFolderId);
+    }
+
     public function upload(string $absolutePath, string $folderId, ?string $name = null): array
     {
         if (! is_file($absolutePath)) {
@@ -80,7 +130,7 @@ class GoogleDriveService
 
     private function deleteEmptyRetries(string $name, string $folderId): void
     {
-        $escapedName = str_replace(["\\", "'"], ["\\\\", "\\'"], $name);
+        $escapedName = str_replace(['\\', "'"], ['\\\\', "\\'"], $name);
         $query = sprintf(
             "name = '%s' and '%s' in parents and trashed = false",
             $escapedName,
@@ -112,7 +162,7 @@ class GoogleDriveService
 
     private function findOrCreateFolder(string $name, string $parentId): string
     {
-        $escapedName = str_replace(["\\", "'"], ["\\\\", "\\'"], $name);
+        $escapedName = str_replace(['\\', "'"], ['\\\\', "\\'"], $name);
         $query = sprintf(
             "name = '%s' and '%s' in parents and mimeType = '%s' and trashed = false",
             $escapedName,
@@ -120,7 +170,7 @@ class GoogleDriveService
             self::FOLDER_MIME_TYPE,
         );
 
-        $existing = $this->client()
+        $existing = $this->folderClient()
             ->get(self::API_URL.'/files', [
                 'q' => $query,
                 'corpora' => 'drive',
@@ -137,7 +187,7 @@ class GoogleDriveService
             return $existing;
         }
 
-        return $this->client()
+        return $this->folderClient()
             ->post(self::API_URL.'/files?supportsAllDrives=true', [
                 'name' => $name,
                 'mimeType' => self::FOLDER_MIME_TYPE,
@@ -155,11 +205,24 @@ class GoogleDriveService
             ->retry(2, 500);
     }
 
+    /**
+     * Las operaciones de carpetas forman parte de pantallas interactivas.
+     * Deben fallar rápido para que una demora de Drive no provoque un error 500.
+     */
+    private function folderClient(): PendingRequest
+    {
+        return Http::acceptJson()
+            ->withToken($this->accessToken())
+            ->connectTimeout(3)
+            ->timeout(5);
+    }
+
     private function accessToken(): string
     {
         return Cache::remember('google-drive.access-token', now()->addMinutes(50), function (): string {
             $response = Http::asForm()
-                ->timeout(20)
+                ->connectTimeout(3)
+                ->timeout(6)
                 ->post('https://oauth2.googleapis.com/token', [
                     'client_id' => config('services.google_drive.client_id'),
                     'client_secret' => config('services.google_drive.client_secret'),

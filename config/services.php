@@ -42,6 +42,7 @@ return [
         'refresh_token' => env('GOOGLE_DRIVE_REFRESH_TOKEN'),
         'shared_drive_id' => env('GOOGLE_DRIVE_SHARED_DRIVE_ID'),
         'root_folder_id' => env('GOOGLE_DRIVE_ROOT_FOLDER_ID'),
+        'investiga_root_folder_id' => env('GOOGLE_DRIVE_INVESTIGA_ROOT_FOLDER_ID'),
     ],
 
 ];
