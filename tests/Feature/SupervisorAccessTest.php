@@ -4,13 +4,18 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\DamiOrders\DamiOrderResource;
 use App\Filament\Resources\Printers\PrinterResource;
+use App\Filament\Resources\SolicitudesAutomation\SolicitudAutomationResource;
 use App\Filament\Resources\SolicitudesInvestiga\SolicitudInvestigaResource;
 use App\Filament\Resources\Users\UserResource;
+use App\Http\Responses\LoginResponse;
 use App\Models\Printer;
+use App\Models\SolicitudAutomation;
 use App\Models\SolicitudInvestiga;
 use App\Models\User;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse as LoginResponseContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class SupervisorAccessTest extends TestCase
@@ -188,5 +193,105 @@ class SupervisorAccessTest extends TestCase
         $this->assertFalse(SolicitudInvestigaResource::canEdit($solicitud));
         $this->get(SolicitudInvestigaResource::getUrl('edit', ['record' => $solicitud]))
             ->assertForbidden();
+    }
+
+    public function test_automation_supervisor_only_sees_and_manages_its_area(): void
+    {
+        $supervisor = User::factory()->create([
+            'name' => 'Supervisor Automation',
+            'role' => 'automation',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($supervisor);
+
+        $this->assertTrue(SolicitudAutomationResource::canViewAny());
+        $this->assertTrue(SolicitudAutomationResource::canCreate());
+        $this->assertFalse(SolicitudInvestigaResource::canViewAny());
+        $this->assertFalse(DamiOrderResource::canViewAny());
+        $this->assertFalse(PrinterResource::canViewAny());
+
+        $this->get('/admin')
+            ->assertOk()
+            ->assertSee('Damian Automation')
+            ->assertSee('Nueva solicitud');
+
+        $this->get(SolicitudAutomationResource::getUrl())
+            ->assertOk()
+            ->assertSee('Solicitudes y proyectos');
+    }
+
+    public function test_automation_request_generates_code_audit_and_progressive_record(): void
+    {
+        $supervisor = User::factory()->create([
+            'role' => 'automation',
+            'is_active' => true,
+        ]);
+        $this->actingAs($supervisor);
+
+        $solicitud = SolicitudAutomation::query()->create([
+            'cliente' => 'Industria de prueba',
+            'titulo' => 'Automatización de línea de envasado',
+            'tipo_servicio' => 'plc_hmi',
+            'necesidad' => 'Se necesita automatizar el control y monitoreo de una línea industrial.',
+            'resultado_esperado' => 'Tablero, PLC y HMI operativos',
+            'estado' => 'solicitud',
+        ]);
+
+        $this->assertMatchesRegularExpression('/^DAT-SOL-\d{4}-\d{4}$/', $solicitud->codigo);
+        $this->assertSame($supervisor->id, $solicitud->responsable_id);
+        $this->assertDatabaseHas('automation_historial_estados', [
+            'solicitud_id' => $solicitud->id,
+            'estado_nuevo' => 'solicitud',
+            'cambiado_por' => $supervisor->id,
+        ]);
+
+        $this->get(SolicitudAutomationResource::getUrl('view', ['record' => $solicitud]))
+            ->assertOk()
+            ->assertSeeInOrder(['Solicitud', 'Alcance', 'Cotización', 'Proyecto', 'Pruebas', 'Entrega y soporte'])
+            ->assertSee('Continuar proyecto');
+
+        $this->get(SolicitudAutomationResource::getUrl('edit', ['record' => $solicitud]))
+            ->assertOk()
+            ->assertSee('Gestionar proyecto de Automation');
+    }
+
+    public function test_gerencia_can_consult_automation_but_cannot_modify_it(): void
+    {
+        $gerencia = User::factory()->create(['role' => 'gerencia', 'is_active' => true]);
+        $solicitud = SolicitudAutomation::query()->create([
+            'cliente' => 'Cliente gerencial',
+            'titulo' => 'Máquina de inspección',
+            'tipo_servicio' => 'maquina',
+            'necesidad' => 'Se requiere diseñar una máquina para inspección de productos.',
+            'resultado_esperado' => 'Máquina validada',
+            'estado' => 'solicitud',
+        ]);
+
+        $this->actingAs($gerencia);
+        $this->assertTrue(SolicitudAutomationResource::canViewAny());
+        $this->assertFalse(SolicitudAutomationResource::canCreate());
+        $this->assertFalse(SolicitudAutomationResource::canEdit($solicitud));
+        $this->get(SolicitudAutomationResource::getUrl('view', ['record' => $solicitud]))->assertOk();
+        $this->get(SolicitudAutomationResource::getUrl('edit', ['record' => $solicitud]))->assertForbidden();
+        $this->get('/admin')->assertOk()->assertSee('Damian Automation');
+    }
+
+    public function test_login_discards_previous_forbidden_destination_and_opens_dashboard(): void
+    {
+        $session = app('session')->driver();
+        $session->start();
+        $session->put('url.intended', url('/admin/automation/solicitudes/999/gestionar'));
+
+        $request = Request::create('/admin/login', 'POST');
+        $request->setLaravelSession($session);
+
+        $loginResponse = app(LoginResponseContract::class);
+        $this->assertInstanceOf(LoginResponse::class, $loginResponse);
+
+        $response = $loginResponse->toResponse($request);
+
+        $this->assertSame(url('/admin'), $response->getTargetUrl());
+        $this->assertNull($session->get('url.intended'));
     }
 }
