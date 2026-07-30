@@ -43,6 +43,7 @@ return [
         'shared_drive_id' => env('GOOGLE_DRIVE_SHARED_DRIVE_ID'),
         'root_folder_id' => env('GOOGLE_DRIVE_ROOT_FOLDER_ID'),
         'investiga_root_folder_id' => env('GOOGLE_DRIVE_INVESTIGA_ROOT_FOLDER_ID'),
+        'automation_root_folder_id' => env('GOOGLE_DRIVE_AUTOMATION_ROOT_FOLDER_ID'),
     ],
 
 ];

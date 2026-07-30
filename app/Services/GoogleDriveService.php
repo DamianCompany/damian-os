@@ -88,6 +88,37 @@ class GoogleDriveService
         return $this->findOrCreateFolder($nombre, $solicitudFolderId);
     }
 
+    /**
+     * @return array{solicitud: string, adjuntos: string}
+     */
+    public function ensureAutomationInitialFolder(string $codigo): array
+    {
+        $solicitudFolder = $this->findOrCreateFolder(
+            $codigo,
+            config('services.google_drive.automation_root_folder_id'),
+        );
+
+        return [
+            'solicitud' => $solicitudFolder,
+            'adjuntos' => $this->findOrCreateFolder('01 SOLICITUD', $solicitudFolder),
+        ];
+    }
+
+    public function ensureAutomationStageFolder(string $solicitudFolderId, string $etapa): string
+    {
+        $nombre = match ($etapa) {
+            'solicitud' => '01 SOLICITUD',
+            'alcance' => '02 ALCANCE',
+            'cotizacion' => '03 COTIZACION',
+            'proyecto' => '04 PROYECTO',
+            'pruebas' => '05 PRUEBAS',
+            'entrega' => '06 ENTREGA Y SOPORTE',
+            default => throw new RuntimeException("Etapa de Automation no válida: {$etapa}"),
+        };
+
+        return $this->findOrCreateFolder($nombre, $solicitudFolderId);
+    }
+
     public function upload(string $absolutePath, string $folderId, ?string $name = null): array
     {
         if (! is_file($absolutePath)) {
