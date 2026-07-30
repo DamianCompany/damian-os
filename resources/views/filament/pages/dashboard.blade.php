@@ -1,6 +1,8 @@
 <x-filament-panels::page>
     <div class="damian-dashboard space-y-6">
-        @if ($isInvestigaSupervisor)
+        @if ($isAutomationSupervisor)
+            @include('filament.pages.partials.dashboard-automation')
+        @elseif ($isInvestigaSupervisor)
             <section class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                     <h1 class="text-3xl font-semibold tracking-[-.04em] text-[#152036] dark:text-[#f3f3f3]">
@@ -266,7 +268,7 @@
                     Hola, {{ auth()->user()->name }}
                 </h1>
                 <p class="mt-2 max-w-2xl text-[.94rem] leading-6 text-[#65738a] dark:text-[#99a5b5]">
-                    Una lectura rápida del avance del área. Gerencia supervisa..
+                    Vista consolidada de DAMI 3D, InvestigaLab y Damian Automation.
                 </p>
             </div>
 
@@ -282,7 +284,7 @@
             </div>
         </section>
 
-        <section class="grid gap-6 xl:grid-cols-2" aria-label="Resumen por áreas">
+        <section class="damian-area-overview grid gap-5 xl:grid-cols-3" aria-label="Resumen por áreas">
             <article class="damian-panel border-t-2 border-t-[#1bb1e3]">
                 <div class="damian-panel__header">
                     <div class="flex items-center gap-3">
@@ -363,6 +365,48 @@
                             <x-filament::icon icon="heroicon-o-rectangle-stack" class="size-6" />
                         </span>
                         <div><p>Total</p><strong>{{ $investiga['total'] }}</strong><span>Solicitudes</span></div>
+                    </article>
+                </div>
+            </article>
+
+            <article class="damian-panel border-t-2 border-t-[#1a4e5c]">
+                <div class="damian-panel__header">
+                    <div class="flex items-center gap-3">
+                        <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-[#1a4e5c]/10 text-[#1a4e5c] dark:text-[#31bae4]">
+                            <x-filament::icon icon="heroicon-o-cpu-chip" class="size-6" />
+                        </span>
+                        <div>
+                            <h2>Damian Automation</h2>
+                            <p>Automatización, máquinas, PLC, software e IoT.</p>
+                        </div>
+                    </div>
+                    <a href="{{ $automation['url'] }}" class="damian-panel__link">Consultar área</a>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#1bb1e3]/10 text-[#1bb1e3]">
+                            <x-filament::icon icon="heroicon-o-inbox-arrow-down" class="size-6" />
+                        </span>
+                        <div><p>Solicitudes</p><strong>{{ $automation['solicitudes'] }}</strong><span>Por evaluar</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-amber-500/10 text-amber-500">
+                            <x-filament::icon icon="heroicon-o-banknotes" class="size-6" />
+                        </span>
+                        <div><p>Cotizaciones</p><strong>{{ $automation['cotizaciones'] }}</strong><span>En decisión</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#22a15e]/10 text-[#22a15e]">
+                            <x-filament::icon icon="heroicon-o-wrench-screwdriver" class="size-6" />
+                        </span>
+                        <div><p>Proyectos activos</p><strong>{{ $automation['activos'] }}</strong><span>En desarrollo</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#1a4e5c]/10 text-[#1a4e5c] dark:text-[#31bae4]">
+                            <x-filament::icon icon="heroicon-o-rectangle-stack" class="size-6" />
+                        </span>
+                        <div><p>Total</p><strong>{{ $automation['total'] }}</strong><span>Expedientes</span></div>
                     </article>
                 </div>
             </article>

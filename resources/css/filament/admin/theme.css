@@ -537,6 +537,74 @@ html.dark .fi-topbar {
     font-size: .78rem;
 }
 
+/* Gerencia: comparación compacta entre áreas */
+.damian-area-overview > .damian-panel {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    padding: 1.2rem;
+}
+
+.damian-area-overview .damian-panel__header {
+    min-height: 4.5rem;
+    align-items: flex-start;
+    gap: .75rem;
+}
+
+.damian-area-overview .damian-panel__header > div {
+    min-width: 0;
+}
+
+.damian-area-overview .damian-panel__header p {
+    max-width: 16rem;
+    line-height: 1.4;
+}
+
+.damian-area-overview .damian-panel__link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.damian-area-overview .damian-supervisor-stat {
+    min-height: 6rem;
+    gap: 0;
+    padding: .85rem 1rem;
+    border-color: rgba(27, 177, 227, .12);
+    box-shadow: none;
+}
+
+.damian-area-overview .damian-supervisor-stat__icon {
+    display: none;
+}
+
+.damian-area-overview .damian-supervisor-stat p {
+    font-size: .84rem;
+    line-height: 1.25;
+}
+
+.damian-area-overview .damian-supervisor-stat strong {
+    margin-top: .25rem;
+    font-size: 1.5rem;
+}
+
+.damian-area-overview .damian-supervisor-stat div > span {
+    margin-top: .25rem;
+    font-size: .75rem;
+    line-height: 1.3;
+}
+
+@media (max-width: 1535px) {
+    .damian-area-overview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .damian-area-overview {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 .damian-work-list {
     margin-top: .35rem;
 }

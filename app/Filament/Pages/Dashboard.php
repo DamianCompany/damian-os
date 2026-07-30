@@ -4,10 +4,12 @@ namespace App\Filament\Pages;
 
 use App\Filament\Resources\DamiOrders\DamiOrderResource;
 use App\Filament\Resources\Printers\PrinterResource;
+use App\Filament\Resources\SolicitudesAutomation\SolicitudAutomationResource;
 use App\Filament\Resources\SolicitudesInvestiga\SolicitudInvestigaResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\DamiOrder;
 use App\Models\Printer;
+use App\Models\SolicitudAutomation;
 use App\Models\SolicitudInvestiga;
 use App\Models\User;
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -31,6 +33,7 @@ class Dashboard extends BaseDashboard
         return match (auth()->user()?->role) {
             'dami_3d' => 'Panel DAMI 3D',
             'investiga_lab' => 'Panel InvestigaLab',
+            'automation' => 'Panel Damian Automation',
             default => 'Panel de Gerencia',
         };
     }
@@ -39,6 +42,10 @@ class Dashboard extends BaseDashboard
     {
         if (auth()->user()?->role === 'investiga_lab') {
             return $this->getInvestigaViewData();
+        }
+
+        if (auth()->user()?->role === 'automation') {
+            return $this->getAutomationViewData();
         }
 
         $orders = DamiOrder::query();
@@ -106,6 +113,7 @@ class Dashboard extends BaseDashboard
         return [
             'isSupervisor' => auth()->user()?->role === 'dami_3d',
             'isInvestigaSupervisor' => false,
+            'isAutomationSupervisor' => false,
             'activeOrders' => $activeOrders,
             'completionRate' => $completionRate,
             'totalPrinters' => $totalPrinters,
@@ -131,6 +139,13 @@ class Dashboard extends BaseDashboard
                 'total' => SolicitudInvestiga::query()->count(),
                 'url' => SolicitudInvestigaResource::getUrl(),
             ],
+            'automation' => [
+                'solicitudes' => SolicitudAutomation::query()->whereIn('estado', ['solicitud', 'en_evaluacion'])->count(),
+                'cotizaciones' => SolicitudAutomation::query()->whereIn('estado', ['cotizacion_enviada', 'esperando_aprobacion'])->count(),
+                'activos' => SolicitudAutomation::query()->whereIn('estado', ['proyecto_activo', 'en_ejecucion', 'en_pruebas'])->count(),
+                'total' => SolicitudAutomation::query()->count(),
+                'url' => SolicitudAutomationResource::getUrl(),
+            ],
             'urls' => [
                 'orders' => DamiOrderResource::getUrl(),
                 'createOrder' => DamiOrderResource::getUrl('create'),
@@ -150,6 +165,7 @@ class Dashboard extends BaseDashboard
         return [
             'isSupervisor' => false,
             'isInvestigaSupervisor' => true,
+            'isAutomationSupervisor' => false,
             'investigaResumen' => [
                 [
                     'label' => 'Ideas registradas',
@@ -186,6 +202,51 @@ class Dashboard extends BaseDashboard
             'urls' => [
                 'solicitudesInvestiga' => SolicitudInvestigaResource::getUrl(),
                 'crearSolicitudInvestiga' => SolicitudInvestigaResource::getUrl('create'),
+            ],
+        ];
+    }
+
+    protected function getAutomationViewData(): array
+    {
+        $solicitudes = SolicitudAutomation::query();
+
+        return [
+            'isSupervisor' => false,
+            'isInvestigaSupervisor' => false,
+            'isAutomationSupervisor' => true,
+            'automationResumen' => [
+                [
+                    'label' => 'Por evaluar',
+                    'detail' => 'Solicitudes y alcance',
+                    'count' => (clone $solicitudes)->whereIn('estado', ['solicitud', 'en_evaluacion'])->count(),
+                    'icon' => 'heroicon-o-inbox-arrow-down',
+                    'tone' => 'blue',
+                ],
+                [
+                    'label' => 'Cotizaciones',
+                    'detail' => 'Pendientes de decisión',
+                    'count' => (clone $solicitudes)->whereIn('estado', ['cotizacion_enviada', 'esperando_aprobacion'])->count(),
+                    'icon' => 'heroicon-o-banknotes',
+                    'tone' => 'teal',
+                ],
+                [
+                    'label' => 'Proyectos activos',
+                    'detail' => 'Ingeniería y ejecución',
+                    'count' => (clone $solicitudes)->whereIn('estado', ['proyecto_activo', 'en_ejecucion', 'en_pruebas'])->count(),
+                    'icon' => 'heroicon-o-wrench-screwdriver',
+                    'tone' => 'green',
+                ],
+            ],
+            'proyectosAutomationRecientes' => SolicitudAutomation::query()->latest()->limit(5)->get(),
+            'entregasAutomation' => SolicitudAutomation::query()
+                ->whereNotNull('fecha_fin_estimada')
+                ->whereNotIn('estado', ['entregado', 'cerrado'])
+                ->orderBy('fecha_fin_estimada')
+                ->limit(5)
+                ->get(),
+            'urls' => [
+                'solicitudesAutomation' => SolicitudAutomationResource::getUrl(),
+                'crearSolicitudAutomation' => SolicitudAutomationResource::getUrl('create'),
             ],
         ];
     }
