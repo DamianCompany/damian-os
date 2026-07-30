@@ -6,6 +6,7 @@
             'gerencia' => 'Administración general',
             'dami_3d' => 'Supervisor DAMI 3D',
             'investiga_lab' => 'Supervisor InvestigaLab',
+            'automation' => 'Supervisor Damian Automation',
             default => 'Acceso DAMIAN OS',
         };
     @endphp

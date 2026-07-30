@@ -46,6 +46,7 @@ class UserForm
                                 'gerencia' => 'Gerencia',
                                 'dami_3d' => 'Supervisor DAMI 3D',
                                 'investiga_lab' => 'Supervisor InvestigaLab',
+                                'automation' => 'Supervisor Damian Automation',
                             ])
                             ->default('dami_3d')
                             ->required(),
