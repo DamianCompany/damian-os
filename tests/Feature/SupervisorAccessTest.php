@@ -4,11 +4,13 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\DamiOrders\DamiOrderResource;
 use App\Filament\Resources\Printers\PrinterResource;
+use App\Filament\Resources\OrdenesServicioTecnico\OrdenServicioTecnicoResource;
 use App\Filament\Resources\SolicitudesAutomation\SolicitudAutomationResource;
 use App\Filament\Resources\SolicitudesInvestiga\SolicitudInvestigaResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Http\Responses\LoginResponse;
 use App\Models\Printer;
+use App\Models\OrdenServicioTecnico;
 use App\Models\SolicitudAutomation;
 use App\Models\SolicitudInvestiga;
 use App\Models\User;
@@ -275,6 +277,102 @@ class SupervisorAccessTest extends TestCase
         $this->get(SolicitudAutomationResource::getUrl('view', ['record' => $solicitud]))->assertOk();
         $this->get(SolicitudAutomationResource::getUrl('edit', ['record' => $solicitud]))->assertForbidden();
         $this->get('/admin')->assertOk()->assertSee('Damian Automation');
+    }
+
+    public function test_servicio_tecnico_supervisor_only_manages_its_area(): void
+    {
+        $supervisor = User::factory()->create([
+            'name' => 'Supervisor Servicio Técnico',
+            'role' => 'servicio_tecnico',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($supervisor);
+
+        $this->assertTrue(OrdenServicioTecnicoResource::canViewAny());
+        $this->assertTrue(OrdenServicioTecnicoResource::canCreate());
+        $this->assertFalse(DamiOrderResource::canViewAny());
+        $this->assertFalse(SolicitudInvestigaResource::canViewAny());
+        $this->assertFalse(SolicitudAutomationResource::canViewAny());
+
+        $this->get('/admin')
+            ->assertOk()
+            ->assertSee('Servicio Técnico')
+            ->assertSee('Recibir equipo');
+
+        $this->get(OrdenServicioTecnicoResource::getUrl())
+            ->assertOk()
+            ->assertSee('Órdenes de servicio');
+    }
+
+    public function test_servicio_tecnico_order_generates_code_and_state_audit(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'servicio_tecnico', 'is_active' => true]);
+        $this->actingAs($supervisor);
+
+        $orden = OrdenServicioTecnico::query()->create([
+            'cliente' => 'Cliente de prueba',
+            'telefono' => '999888777',
+            'tipo_equipo' => 'Impresora 3D',
+            'tipo_atencion' => 'mantenimiento',
+            'falla_reportada' => 'El equipo no enciende.',
+            'prioridad' => 'normal',
+            'estado' => 'ingresado',
+        ]);
+
+        $this->assertMatchesRegularExpression('/^STD-OT-\d{4}-\d{4}$/', $orden->codigo);
+        $this->assertSame($supervisor->id, $orden->responsable_id);
+        $this->assertDatabaseHas('servicio_tecnico_historial_estados', [
+            'orden_id' => $orden->id,
+            'estado_nuevo' => 'ingresado',
+            'cambiado_por' => $supervisor->id,
+        ]);
+
+        $this->get(OrdenServicioTecnicoResource::getUrl('view', ['record' => $orden]))
+            ->assertOk()
+            ->assertSee('Iniciar diagnóstico')
+            ->assertSee('Completar información');
+
+        $this->get(OrdenServicioTecnicoResource::getUrl('edit', ['record' => $orden]))
+            ->assertOk()
+            ->assertSee('Diagnóstico y cotización')
+            ->assertSee('Mantenimiento')
+            ->assertSee('Prueba y entrega');
+
+        $orden->update([
+            'conceptos_mantenimiento' => [[
+                'descripcion' => 'Mantenimiento preventivo',
+                'cantidad' => 1,
+                'precio_unitario' => 20,
+            ]],
+            'base_imponible' => 16.95,
+            'igv_incluido' => 3.05,
+            'precio_cotizado' => 20,
+        ]);
+
+        $this->get(route('servicio-tecnico.cotizacion.pdf', $orden))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_gerencia_can_consult_servicio_tecnico_but_cannot_modify_it(): void
+    {
+        $gerencia = User::factory()->create(['role' => 'gerencia', 'is_active' => true]);
+        $orden = OrdenServicioTecnico::query()->create([
+            'cliente' => 'Cliente gerencial',
+            'telefono' => '999888777',
+            'tipo_equipo' => 'Máquina industrial',
+            'falla_reportada' => 'Presenta una parada inesperada.',
+            'estado' => 'ingresado',
+        ]);
+
+        $this->actingAs($gerencia);
+        $this->assertTrue(OrdenServicioTecnicoResource::canViewAny());
+        $this->assertFalse(OrdenServicioTecnicoResource::canCreate());
+        $this->assertFalse(OrdenServicioTecnicoResource::canEdit($orden));
+        $this->get(OrdenServicioTecnicoResource::getUrl('view', ['record' => $orden]))->assertOk();
+        $this->get(OrdenServicioTecnicoResource::getUrl('edit', ['record' => $orden]))->assertForbidden();
+        $this->get('/admin')->assertOk()->assertSee('Servicio Técnico');
     }
 
     public function test_login_discards_previous_forbidden_destination_and_opens_dashboard(): void
