@@ -7,6 +7,7 @@
             'dami_3d' => 'Supervisor DAMI 3D',
             'investiga_lab' => 'Supervisor InvestigaLab',
             'automation' => 'Supervisor Damian Automation',
+            'servicio_tecnico' => 'Supervisor Servicio Técnico',
             default => 'Acceso DAMIAN OS',
         };
     @endphp

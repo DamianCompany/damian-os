@@ -29,11 +29,12 @@ class UsersTable
                         'dami_3d' => 'Supervisor DAMI 3D',
                         'investiga_lab' => 'Supervisor InvestigaLab',
                         'automation' => 'Supervisor Damian Automation',
+                        'servicio_tecnico' => 'Supervisor Servicio Técnico',
                         default => 'Perfil no reconocido',
                     })
                     ->color(fn ($state): string => match ($state) {
                         'gerencia' => 'info',
-                        'dami_3d', 'investiga_lab', 'automation' => 'success',
+                        'dami_3d', 'investiga_lab', 'automation', 'servicio_tecnico' => 'success',
                         default => 'gray',
                     }),
                 TextColumn::make('is_active')
@@ -54,6 +55,7 @@ class UsersTable
                         'dami_3d' => 'Supervisor DAMI 3D',
                         'investiga_lab' => 'Supervisor InvestigaLab',
                         'automation' => 'Supervisor Damian Automation',
+                        'servicio_tecnico' => 'Supervisor Servicio Técnico',
                     ]),
                 TernaryFilter::make('is_active')
                     ->label('Estado del acceso')

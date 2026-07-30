@@ -4,11 +4,13 @@ namespace App\Filament\Pages;
 
 use App\Filament\Resources\DamiOrders\DamiOrderResource;
 use App\Filament\Resources\Printers\PrinterResource;
+use App\Filament\Resources\OrdenesServicioTecnico\OrdenServicioTecnicoResource;
 use App\Filament\Resources\SolicitudesAutomation\SolicitudAutomationResource;
 use App\Filament\Resources\SolicitudesInvestiga\SolicitudInvestigaResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\DamiOrder;
 use App\Models\Printer;
+use App\Models\OrdenServicioTecnico;
 use App\Models\SolicitudAutomation;
 use App\Models\SolicitudInvestiga;
 use App\Models\User;
@@ -34,6 +36,7 @@ class Dashboard extends BaseDashboard
             'dami_3d' => 'Panel DAMI 3D',
             'investiga_lab' => 'Panel InvestigaLab',
             'automation' => 'Panel Damian Automation',
+            'servicio_tecnico' => 'Panel Servicio Técnico',
             default => 'Panel de Gerencia',
         };
     }
@@ -46,6 +49,10 @@ class Dashboard extends BaseDashboard
 
         if (auth()->user()?->role === 'automation') {
             return $this->getAutomationViewData();
+        }
+
+        if (auth()->user()?->role === 'servicio_tecnico') {
+            return $this->getServicioTecnicoViewData();
         }
 
         $orders = DamiOrder::query();
@@ -114,6 +121,7 @@ class Dashboard extends BaseDashboard
             'isSupervisor' => auth()->user()?->role === 'dami_3d',
             'isInvestigaSupervisor' => false,
             'isAutomationSupervisor' => false,
+            'isServicioTecnicoSupervisor' => false,
             'activeOrders' => $activeOrders,
             'completionRate' => $completionRate,
             'totalPrinters' => $totalPrinters,
@@ -146,6 +154,13 @@ class Dashboard extends BaseDashboard
                 'total' => SolicitudAutomation::query()->count(),
                 'url' => SolicitudAutomationResource::getUrl(),
             ],
+            'servicioTecnico' => [
+                'porDiagnosticar' => OrdenServicioTecnico::query()->whereIn('estado', ['ingresado', 'en_diagnostico'])->count(),
+                'enReparacion' => OrdenServicioTecnico::query()->whereIn('estado', ['esperando_repuesto', 'en_reparacion', 'en_pruebas'])->count(),
+                'listos' => OrdenServicioTecnico::query()->where('estado', 'listo_entrega')->count(),
+                'total' => OrdenServicioTecnico::query()->count(),
+                'url' => OrdenServicioTecnicoResource::getUrl(),
+            ],
             'urls' => [
                 'orders' => DamiOrderResource::getUrl(),
                 'createOrder' => DamiOrderResource::getUrl('create'),
@@ -166,6 +181,7 @@ class Dashboard extends BaseDashboard
             'isSupervisor' => false,
             'isInvestigaSupervisor' => true,
             'isAutomationSupervisor' => false,
+            'isServicioTecnicoSupervisor' => false,
             'investigaResumen' => [
                 [
                     'label' => 'Ideas registradas',
@@ -214,6 +230,7 @@ class Dashboard extends BaseDashboard
             'isSupervisor' => false,
             'isInvestigaSupervisor' => false,
             'isAutomationSupervisor' => true,
+            'isServicioTecnicoSupervisor' => false,
             'automationResumen' => [
                 [
                     'label' => 'Por evaluar',
@@ -247,6 +264,56 @@ class Dashboard extends BaseDashboard
             'urls' => [
                 'solicitudesAutomation' => SolicitudAutomationResource::getUrl(),
                 'crearSolicitudAutomation' => SolicitudAutomationResource::getUrl('create'),
+            ],
+        ];
+    }
+
+    protected function getServicioTecnicoViewData(): array
+    {
+        $ordenes = OrdenServicioTecnico::query();
+
+        return [
+            'isSupervisor' => false,
+            'isInvestigaSupervisor' => false,
+            'isAutomationSupervisor' => false,
+            'isServicioTecnicoSupervisor' => true,
+            'servicioTecnicoResumen' => [
+                [
+                    'label' => 'Por diagnosticar',
+                    'detail' => 'Ingresados o en revisión',
+                    'count' => (clone $ordenes)->whereIn('estado', ['ingresado', 'en_diagnostico'])->count(),
+                    'icon' => 'heroicon-o-magnifying-glass',
+                    'tone' => 'blue',
+                ],
+                [
+                    'label' => 'En reparación',
+                    'detail' => 'Trabajo técnico activo',
+                    'count' => (clone $ordenes)->whereIn('estado', ['esperando_repuesto', 'en_reparacion', 'en_pruebas'])->count(),
+                    'icon' => 'heroicon-o-wrench-screwdriver',
+                    'tone' => 'teal',
+                ],
+                [
+                    'label' => 'Listos para entregar',
+                    'detail' => 'Esperando al cliente',
+                    'count' => (clone $ordenes)->where('estado', 'listo_entrega')->count(),
+                    'icon' => 'heroicon-o-check-circle',
+                    'tone' => 'green',
+                ],
+            ],
+            'ordenesServicioRecientes' => OrdenServicioTecnico::query()
+                ->whereNotIn('estado', ['entregado'])
+                ->latest()
+                ->limit(5)
+                ->get(),
+            'entregasServicioProximas' => OrdenServicioTecnico::query()
+                ->whereNotNull('fecha_entrega_estimada')
+                ->whereNotIn('estado', ['entregado', 'no_reparado'])
+                ->orderBy('fecha_entrega_estimada')
+                ->limit(5)
+                ->get(),
+            'urls' => [
+                'ordenesServicioTecnico' => OrdenServicioTecnicoResource::getUrl(),
+                'crearOrdenServicioTecnico' => OrdenServicioTecnicoResource::getUrl('create'),
             ],
         ];
     }

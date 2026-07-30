@@ -1,6 +1,8 @@
 <x-filament-panels::page>
     <div class="damian-dashboard space-y-6">
-        @if ($isAutomationSupervisor)
+        @if ($isServicioTecnicoSupervisor)
+            @include('filament.pages.partials.dashboard-servicio-tecnico')
+        @elseif ($isAutomationSupervisor)
             @include('filament.pages.partials.dashboard-automation')
         @elseif ($isInvestigaSupervisor)
             <section class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -268,7 +270,7 @@
                     Hola, {{ auth()->user()->name }}
                 </h1>
                 <p class="mt-2 max-w-2xl text-[.94rem] leading-6 text-[#65738a] dark:text-[#99a5b5]">
-                    Vista consolidada de DAMI 3D, InvestigaLab y Damian Automation.
+                    Vista consolidada de DAMI 3D, InvestigaLab, Damian Automation y Servicio Técnico.
                 </p>
             </div>
 
@@ -284,7 +286,7 @@
             </div>
         </section>
 
-        <section class="damian-area-overview grid gap-5 xl:grid-cols-3" aria-label="Resumen por áreas">
+        <section class="damian-area-overview grid gap-5 xl:grid-cols-2" aria-label="Resumen por áreas">
             <article class="damian-panel border-t-2 border-t-[#1bb1e3]">
                 <div class="damian-panel__header">
                     <div class="flex items-center gap-3">
@@ -407,6 +409,39 @@
                             <x-filament::icon icon="heroicon-o-rectangle-stack" class="size-6" />
                         </span>
                         <div><p>Total</p><strong>{{ $automation['total'] }}</strong><span>Expedientes</span></div>
+                    </article>
+                </div>
+            </article>
+
+            <article class="damian-panel border-t-2 border-t-[#3caa83]">
+                <div class="damian-panel__header">
+                    <div class="flex items-center gap-3">
+                        <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-[#3caa83]/10 text-[#22a15e]">
+                            <x-filament::icon icon="heroicon-o-wrench-screwdriver" class="size-6" />
+                        </span>
+                        <div>
+                            <h2>Servicio Técnico</h2>
+                            <p>Diagnóstico, reparación, pruebas y entrega de equipos.</p>
+                        </div>
+                    </div>
+                    <a href="{{ $servicioTecnico['url'] }}" class="damian-panel__link">Consultar área</a>
+                </div>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#1bb1e3]/10 text-[#1bb1e3]"><x-filament::icon icon="heroicon-o-magnifying-glass" class="size-6" /></span>
+                        <div><p>Por diagnosticar</p><strong>{{ $servicioTecnico['porDiagnosticar'] }}</strong><span>Ingresados o en revisión</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#1a4e5c]/10 text-[#1a4e5c] dark:text-[#31bae4]"><x-filament::icon icon="heroicon-o-wrench" class="size-6" /></span>
+                        <div><p>En reparación</p><strong>{{ $servicioTecnico['enReparacion'] }}</strong><span>Trabajo técnico activo</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#22a15e]/10 text-[#22a15e]"><x-filament::icon icon="heroicon-o-check-circle" class="size-6" /></span>
+                        <div><p>Listos</p><strong>{{ $servicioTecnico['listos'] }}</strong><span>Para entregar</span></div>
+                    </article>
+                    <article class="damian-supervisor-stat">
+                        <span class="damian-supervisor-stat__icon bg-[#3caa83]/10 text-[#3caa83]"><x-filament::icon icon="heroicon-o-rectangle-stack" class="size-6" /></span>
+                        <div><p>Total</p><strong>{{ $servicioTecnico['total'] }}</strong><span>Órdenes registradas</span></div>
                     </article>
                 </div>
             </article>

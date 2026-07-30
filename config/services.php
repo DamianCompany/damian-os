@@ -44,6 +44,7 @@ return [
         'root_folder_id' => env('GOOGLE_DRIVE_ROOT_FOLDER_ID'),
         'investiga_root_folder_id' => env('GOOGLE_DRIVE_INVESTIGA_ROOT_FOLDER_ID'),
         'automation_root_folder_id' => env('GOOGLE_DRIVE_AUTOMATION_ROOT_FOLDER_ID'),
+        'servicio_tecnico_root_folder_id' => env('GOOGLE_DRIVE_SERVICIO_TECNICO_ROOT_FOLDER_ID'),
     ],
 
 ];

@@ -119,6 +119,35 @@ class GoogleDriveService
         return $this->findOrCreateFolder($nombre, $solicitudFolderId);
     }
 
+    /**
+     * @return array{orden: string, ingreso: string}
+     */
+    public function ensureServicioTecnicoInitialFolder(string $codigo): array
+    {
+        $ordenFolder = $this->findOrCreateFolder(
+            $codigo,
+            config('services.google_drive.servicio_tecnico_root_folder_id'),
+        );
+
+        return [
+            'orden' => $ordenFolder,
+            'ingreso' => $this->findOrCreateFolder('01 INGRESO', $ordenFolder),
+        ];
+    }
+
+    public function ensureServicioTecnicoStageFolder(string $ordenFolderId, string $etapa): string
+    {
+        $nombre = match ($etapa) {
+            'ingreso' => '01 INGRESO',
+            'diagnostico' => '02 DIAGNOSTICO Y COTIZACION',
+            'reparacion' => '03 MANTENIMIENTO O REPARACION',
+            'entrega' => '04 PRUEBA ENTREGA Y GARANTIA',
+            default => throw new RuntimeException("Etapa de Servicio Técnico no válida: {$etapa}"),
+        };
+
+        return $this->findOrCreateFolder($nombre, $ordenFolderId);
+    }
+
     public function upload(string $absolutePath, string $folderId, ?string $name = null): array
     {
         if (! is_file($absolutePath)) {
