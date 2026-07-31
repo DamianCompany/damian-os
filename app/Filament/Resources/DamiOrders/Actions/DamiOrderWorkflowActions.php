@@ -3,10 +3,16 @@
 namespace App\Filament\Resources\DamiOrders\Actions;
 
 use App\Models\DamiOrder;
+use App\Models\ProductoProveedorDami3d;
+use App\Models\ProveedorDami3d;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 
 class DamiOrderWorkflowActions
 {
@@ -44,10 +50,51 @@ class DamiOrderWorkflowActions
             ->visible(fn (DamiOrder $record): bool => self::isSupervisor() && $record->status !== 'completed')
             ->fillForm(fn (DamiOrder $record): array => [
                 'postprocess_hours' => $record->postprocess_hours,
+                'proveedor_dami3d_id' => $record->proveedor_dami3d_id,
+                'producto_proveedor_dami3d_id' => $record->producto_proveedor_dami3d_id,
                 'reference_images' => $record->referenceFiles()->orderBy('id')->pluck('path')->all(),
                 'received_file' => $record->files()->where('type', 'received')->value('path'),
             ])
             ->schema([
+                Grid::make(2)->schema([
+                    Select::make('proveedor_dami3d_id')
+                        ->label('Proveedor del material')
+                        ->helperText('Opcional. Selecciona primero el proveedor.')
+                        ->options(fn (): array => ProveedorDami3d::query()
+                            ->whereIn('estado', ['evaluacion', 'activo'])
+                            ->orderBy('razon_social')
+                            ->pluck('razon_social', 'id')
+                            ->all())
+                        ->searchable()
+                        ->preload()
+                        ->native(false)
+                        ->live()
+                        ->afterStateUpdated(fn (Set $set) => $set('producto_proveedor_dami3d_id', null)),
+                    Select::make('producto_proveedor_dami3d_id')
+                        ->label('Producto o filamento')
+                        ->helperText(fn (Get $get): string => filled($get('proveedor_dami3d_id'))
+                            ? 'Su marca y categoría se vincularán automáticamente.'
+                            : 'Selecciona primero un proveedor.')
+                        ->options(function (Get $get): array {
+                            if (blank($proveedorId = $get('proveedor_dami3d_id'))) {
+                                return [];
+                            }
+
+                            return ProductoProveedorDami3d::query()
+                                ->with('marca')
+                                ->where('proveedor_id', $proveedorId)
+                                ->where('activo', true)
+                                ->orderBy('nombre')
+                                ->get()
+                                ->mapWithKeys(fn (ProductoProveedorDami3d $producto): array => [
+                                    $producto->id => $producto->nombre.($producto->marca ? ' · '.$producto->marca->nombre : ''),
+                                ])
+                                ->all();
+                        })
+                        ->searchable()
+                        ->native(false)
+                        ->disabled(fn (Get $get): bool => blank($get('proveedor_dami3d_id'))),
+                ]),
                 TextInput::make('postprocess_hours')
                     ->label('Tiempo de postproceso')
                     ->helperText('Opcional')
@@ -90,6 +137,8 @@ class DamiOrderWorkflowActions
                     'postprocess_hours' => filled($data['postprocess_hours'] ?? null)
                         ? $data['postprocess_hours']
                         : null,
+                    'proveedor_dami3d_id' => $data['proveedor_dami3d_id'] ?? null,
+                    'producto_proveedor_dami3d_id' => $data['producto_proveedor_dami3d_id'] ?? null,
                 ]);
 
                 $record->files()->delete();

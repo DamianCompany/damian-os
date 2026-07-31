@@ -6,6 +6,7 @@ use App\Filament\Resources\OrdenesServicioTecnico\OrdenServicioTecnicoResource;
 use App\Filament\Resources\OrdenesServicioTecnico\Schemas\FormularioTrabajoServicioTecnico;
 use App\Services\GoogleDriveService;
 use App\Services\CotizacionServicioTecnicoPdf;
+use App\Models\MarcaProveedorServicioTecnico;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -38,6 +39,9 @@ class GestionarOrdenServicioTecnico extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        $data['marca'] = filled($data['marca_servicio_tecnico_id'] ?? null)
+            ? MarcaProveedorServicioTecnico::find($data['marca_servicio_tecnico_id'])?->nombre
+            : $this->record->marca;
         $data['etapa_actual'] = $this->calcularEtapa($data);
         $data['avance'] = $this->calcularAvance($data);
         $data['estado'] = $this->calcularEstado($data);

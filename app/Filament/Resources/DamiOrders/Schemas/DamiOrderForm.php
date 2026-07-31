@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\DamiOrders\Schemas;
 
 use App\Models\Printer;
+use App\Models\ProductoProveedorDami3d;
+use App\Models\ProveedorDami3d;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -209,6 +211,45 @@ class DamiOrderForm
                                     ->minValue(0)
                                     ->maxValue(10000)
                                     ->suffix('h'),
+                            ]),
+                            Grid::make(['default' => 1, 'md' => 2])->schema([
+                                Select::make('proveedor_dami3d_id')
+                                    ->label('Proveedor del material')
+                                    ->helperText('Opcional al planificar; puedes completarlo durante el seguimiento.')
+                                    ->options(fn (): array => ProveedorDami3d::query()
+                                        ->whereIn('estado', ['evaluacion', 'activo'])
+                                        ->orderBy('razon_social')
+                                        ->pluck('razon_social', 'id')
+                                        ->all())
+                                    ->searchable()
+                                    ->preload()
+                                    ->native(false)
+                                    ->live()
+                                    ->afterStateUpdated(fn (Set $set) => $set('producto_proveedor_dami3d_id', null)),
+                                Select::make('producto_proveedor_dami3d_id')
+                                    ->label('Producto o filamento comprado')
+                                    ->helperText(fn (Get $get): string => filled($get('proveedor_dami3d_id'))
+                                        ? 'La marca y categoría se obtienen automáticamente del producto.'
+                                        : 'Selecciona primero un proveedor.')
+                                    ->options(function (Get $get): array {
+                                        if (blank($proveedorId = $get('proveedor_dami3d_id'))) {
+                                            return [];
+                                        }
+
+                                        return ProductoProveedorDami3d::query()
+                                            ->with('marca')
+                                            ->where('proveedor_id', $proveedorId)
+                                            ->where('activo', true)
+                                            ->orderBy('nombre')
+                                            ->get()
+                                            ->mapWithKeys(fn (ProductoProveedorDami3d $producto): array => [
+                                                $producto->id => $producto->nombre.($producto->marca ? ' · '.$producto->marca->nombre : ''),
+                                            ])
+                                            ->all();
+                                    })
+                                    ->searchable()
+                                    ->native(false)
+                                    ->disabled(fn (Get $get): bool => blank($get('proveedor_dami3d_id'))),
                             ]),
                         ]),
                 ]),

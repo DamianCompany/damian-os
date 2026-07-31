@@ -1,6 +1,10 @@
 <x-filament-panels::page>
     @php
-        $order = $this->getRecord();
+        $order = $this->getRecord()->loadMissing([
+            'proveedorDami3d',
+            'productoProveedorDami3d.categoria',
+            'productoProveedorDami3d.marca',
+        ]);
         $status = match ($order->status) {
             'pending' => ['label' => 'Pendiente', 'class' => 'bg-[#1bb1e3]/10 text-[#168fdd] dark:text-[#31bae4]'],
             'in_progress' => ['label' => 'En proceso', 'class' => 'bg-amber-500/10 text-amber-600 dark:text-amber-400'],
@@ -120,6 +124,19 @@
                 <dl class="damian-order-data">
                     <div><dt>Filamento utilizado</dt><dd>{{ number_format((float) $order->filament_grams, 2) }} g</dd></div>
                     <div><dt>Tipo de filamento</dt><dd>{{ $order->filament_type }}</dd></div>
+                    <div><dt>Proveedor</dt><dd>{{ $order->proveedorDami3d?->razon_social ?: 'Pendiente de relacionar' }}</dd></div>
+                    <div>
+                        <dt>Producto del proveedor</dt>
+                        <dd>
+                            {{ $order->productoProveedorDami3d?->nombre ?: 'No seleccionado' }}
+                            @if ($order->productoProveedorDami3d)
+                                <span class="block text-xs font-normal text-[#65738a] dark:text-[#99a5b5]">
+                                    {{ $order->productoProveedorDami3d->categoria?->nombre ?: 'Sin categoría' }}
+                                    @if ($order->productoProveedorDami3d->marca) · {{ $order->productoProveedorDami3d->marca->nombre }} @endif
+                                </span>
+                            @endif
+                        </dd>
+                    </div>
                     <div><dt>Impresora</dt><dd>{{ $order->printer?->name ?? 'No disponible' }}</dd></div>
                     <div><dt>Ubicación</dt><dd>{{ $order->printer_location }}</dd></div>
                     <div><dt>Responsable</dt><dd>{{ $order->responsible_name }}</dd></div>

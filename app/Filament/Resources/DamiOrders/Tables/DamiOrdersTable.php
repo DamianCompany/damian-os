@@ -55,7 +55,12 @@ class DamiOrdersTable
                     ->options([
                         '1' => 'Requiere factura',
                         '0' => 'No requiere factura',
-                    ])
+                    ]),
+                SelectFilter::make('proveedor_dami3d_id')
+                    ->label('Proveedor')
+                    ->relationship('proveedorDami3d', 'razon_social')
+                    ->searchable()
+                    ->preload(),
             ])
             ->defaultSort('created_at', 'desc')
             ->recordUrl(fn ($record): string => DamiOrderResource::getUrl('view', ['record' => $record]))

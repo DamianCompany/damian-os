@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OrdenesServicioTecnico\Schemas;
 
+use App\Models\ProveedorServicioTecnico;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -11,6 +12,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class FormularioIngresoServicioTecnico
@@ -56,7 +58,7 @@ class FormularioIngresoServicioTecnico
                             ->required(),
                         Select::make('tipo_equipo')->label('Tipo de equipo')->options(self::tiposEquipo())
                             ->searchable()->native(false)->required(),
-                        TextInput::make('marca')->label('Marca')->placeholder('Opcional'),
+                        ...self::camposReferenciaProveedor(),
                         TextInput::make('modelo')->label('Modelo')->placeholder('Opcional'),
                         TextInput::make('numero_serie')->label('Número de serie')->placeholder('Opcional'),
                         Select::make('condicion_visible')->label('Condición visible')->options([
@@ -98,6 +100,58 @@ class FormularioIngresoServicioTecnico
             'maquina_electrica' => 'Máquina eléctrica',
             'mecanizado' => 'Trabajo de torno o fresado',
             'otro' => 'Otro',
+        ];
+    }
+
+    public static function camposReferenciaProveedor(bool $categoriaRequerida = true): array
+    {
+        return [
+            Select::make('categoria_servicio_tecnico_id')
+                ->label('Categoría técnica')
+                ->helperText('Grupo general del equipo o insumo recibido.')
+                ->relationship(
+                    'categoriaServicioTecnico',
+                    'nombre',
+                    modifyQueryUsing: fn ($query) => $query->where('activo', true)->orderBy('orden'),
+                )
+                ->searchable()
+                ->preload()
+                ->live()
+                ->required($categoriaRequerida)
+                ->afterStateUpdated(fn (Set $set) => $set('proveedor_servicio_tecnico_id', null)),
+            Select::make('marca_servicio_tecnico_id')
+                ->label('Marca')
+                ->helperText('Opcional si la máquina no tiene marca visible.')
+                ->relationship(
+                    'marcaServicioTecnico',
+                    'nombre',
+                    modifyQueryUsing: fn ($query) => $query->where('activo', true)->orderBy('nombre'),
+                )
+                ->searchable()
+                ->preload()
+                ->live()
+                ->afterStateUpdated(fn (Set $set) => $set('proveedor_servicio_tecnico_id', null)),
+            Select::make('proveedor_servicio_tecnico_id')
+                ->label('Proveedor relacionado')
+                ->helperText('Opcional. Se filtra según la categoría y marca elegidas.')
+                ->options(function (Get $get): array {
+                    $query = ProveedorServicioTecnico::query()
+                        ->whereIn('estado', ['evaluacion', 'activo']);
+
+                    if (filled($categoria = $get('categoria_servicio_tecnico_id'))) {
+                        $query->whereHas('categorias', fn ($relacion) => $relacion->whereKey($categoria));
+                    }
+
+                    if (filled($marca = $get('marca_servicio_tecnico_id'))) {
+                        $query->whereHas('marcas', fn ($relacion) => $relacion->whereKey($marca));
+                    }
+
+                    return $query->orderBy('razon_social')->pluck('razon_social', 'id')->all();
+                })
+                ->searchable()
+                ->native(false)
+                ->disabled(fn (Get $get): bool => blank($get('categoria_servicio_tecnico_id')))
+                ->columnSpanFull(),
         ];
     }
 }

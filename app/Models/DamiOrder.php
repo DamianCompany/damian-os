@@ -32,6 +32,16 @@ class DamiOrder extends Model
         return $this->belongsTo(Printer::class);
     }
 
+    public function proveedorDami3d(): BelongsTo
+    {
+        return $this->belongsTo(ProveedorDami3d::class, 'proveedor_dami3d_id');
+    }
+
+    public function productoProveedorDami3d(): BelongsTo
+    {
+        return $this->belongsTo(ProductoProveedorDami3d::class, 'producto_proveedor_dami3d_id');
+    }
+
     public function files(): HasMany
     {
         return $this->hasMany(DamiOrderFile::class);
@@ -65,6 +75,12 @@ class DamiOrder extends Model
         });
 
         static::saving(function (self $order): void {
+            if (filled($order->producto_proveedor_dami3d_id)) {
+                $order->proveedor_dami3d_id = ProductoProveedorDami3d::query()
+                    ->whereKey($order->producto_proveedor_dami3d_id)
+                    ->value('proveedor_id');
+            }
+
             $endDate = Carbon::parse($order->end_date);
             $order->delivery_date = $endDate->addDays(3);
             $order->filament_cost = round(((float) $order->filament_grams / 1000) * 100, 2);

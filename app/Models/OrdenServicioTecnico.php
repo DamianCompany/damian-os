@@ -48,6 +48,21 @@ class OrdenServicioTecnico extends Model
         return $this->belongsTo(User::class, 'responsable_id');
     }
 
+    public function categoriaServicioTecnico(): BelongsTo
+    {
+        return $this->belongsTo(CategoriaProveedorServicioTecnico::class, 'categoria_servicio_tecnico_id');
+    }
+
+    public function marcaServicioTecnico(): BelongsTo
+    {
+        return $this->belongsTo(MarcaProveedorServicioTecnico::class, 'marca_servicio_tecnico_id');
+    }
+
+    public function proveedorServicioTecnico(): BelongsTo
+    {
+        return $this->belongsTo(ProveedorServicioTecnico::class, 'proveedor_servicio_tecnico_id');
+    }
+
     public function archivos(): HasMany
     {
         return $this->hasMany(ArchivoServicioTecnico::class, 'orden_id');

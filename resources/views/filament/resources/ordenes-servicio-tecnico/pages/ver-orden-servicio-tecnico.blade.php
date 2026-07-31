@@ -1,7 +1,15 @@
 @php
     use App\Filament\Resources\OrdenesServicioTecnico\Tables\TablaOrdenesServicioTecnico;
 
-    $orden = $this->getRecord()->loadMissing(['archivos', 'historialEstados.autor', 'responsable']);
+    $orden = $this->getRecord()->loadMissing([
+        'archivos',
+        'historialEstados.autor',
+        'responsable',
+        'categoriaServicioTecnico',
+        'marcaServicioTecnico',
+        'proveedorServicioTecnico',
+    ]);
+    $marcaEquipo = $orden->marcaServicioTecnico?->nombre ?: $orden->marca;
     $carpetas = $orden->carpetas_drive ?? [];
     $etapas = [
         ['clave' => 'ingreso', 'numero' => '01', 'nombre' => 'Ingreso', 'descripcion' => 'Cliente, equipo, falla, accesorios y fotografías.', 'icono' => 'heroicon-o-inbox-arrow-down', 'completa' => true, 'resumen' => $orden->ubicacion_fisica],
@@ -19,7 +27,7 @@
                     <span class="text-sm font-semibold text-[#1bb1e3]">{{ TablaOrdenesServicioTecnico::etiquetaEstado($orden->estado) }}</span>
                     <h2 class="mt-2 text-2xl font-bold tracking-[-.035em] text-[#152036] dark:text-[#f3f3f3]">
                         {{ TablaOrdenesServicioTecnico::etiquetaEquipo($orden->tipo_equipo) }}
-                        @if ($orden->marca || $orden->modelo) · {{ trim("{$orden->marca} {$orden->modelo}") }} @endif
+                        @if ($marcaEquipo || $orden->modelo) · {{ trim("{$marcaEquipo} {$orden->modelo}") }} @endif
                     </h2>
                     <p class="mt-2 max-w-3xl text-sm leading-6 text-[#65738a] dark:text-[#a5aebd]">{{ $orden->falla_reportada }}</p>
                 </div>
@@ -59,6 +67,9 @@
                     <div><dt>Teléfono</dt><dd>{{ $orden->telefono }}</dd></div>
                     <div><dt>DNI / RUC</dt><dd>{{ $orden->documento_cliente ?: 'No registrado' }}</dd></div>
                     <div><dt>Tipo de atención</dt><dd>{{ $orden->tipo_atencion === 'mantenimiento' ? 'Mantenimiento' : 'Reparación' }}</dd></div>
+                    <div><dt>Categoría técnica</dt><dd>{{ $orden->categoriaServicioTecnico?->nombre ?: 'Pendiente de clasificar' }}</dd></div>
+                    <div><dt>Marca</dt><dd>{{ $marcaEquipo ?: 'No identificada' }}</dd></div>
+                    <div><dt>Proveedor relacionado</dt><dd>{{ $orden->proveedorServicioTecnico?->razon_social ?: 'No asignado' }}</dd></div>
                     <div>
                         <dt>Facturación</dt>
                         <dd class="{{ $orden->requiere_factura ? 'text-[#22a15e]' : '' }}">

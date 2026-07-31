@@ -24,6 +24,14 @@ class FormularioTrabajoServicioTecnico
     {
         return $schema->components([
             Hidden::make('tipo_atencion'),
+            Section::make('Clasificación y proveedor')
+                ->description('Completa esta referencia solo si quedó pendiente durante la recepción.')
+                ->icon('heroicon-o-building-storefront')
+                ->collapsed()
+                ->schema([
+                    Grid::make(['default' => 1, 'md' => 3])
+                        ->schema(FormularioIngresoServicioTecnico::camposReferenciaProveedor(false)),
+                ]),
             Wizard::make([
                 self::diagnostico(),
                 self::reparacion(),

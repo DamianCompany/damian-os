@@ -17,7 +17,11 @@ class TablaOrdenesServicioTecnico
             ->columns([
                 TextColumn::make('codigo')->label('Orden')->searchable()->sortable()->weight('semibold'),
                 TextColumn::make('cliente')->label('Cliente / equipo')
-                    ->description(fn ($record): string => self::etiquetaEquipo($record->tipo_equipo).' · '.trim("{$record->marca} {$record->modelo}"))
+                    ->description(function ($record): string {
+                        $marca = $record->marcaServicioTecnico?->nombre ?: $record->marca;
+
+                        return self::etiquetaEquipo($record->tipo_equipo).' · '.trim("{$marca} {$record->modelo}");
+                    })
                     ->searchable(['cliente', 'telefono', 'numero_serie', 'falla_reportada']),
                 TextColumn::make('falla_reportada')->label('Falla reportada')->limit(45)->wrap(),
                 TextColumn::make('tipo_atencion')->label('Atención')->badge()
@@ -41,6 +45,16 @@ class TablaOrdenesServicioTecnico
             ->filters([
                 SelectFilter::make('estado')->label('Estado')->options(self::estados()),
                 SelectFilter::make('tipo_equipo')->label('Equipo')->options(FormularioIngresoServicioTecnico::tiposEquipo()),
+                SelectFilter::make('categoria_servicio_tecnico_id')
+                    ->label('Categoría')
+                    ->relationship('categoriaServicioTecnico', 'nombre')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('marca_servicio_tecnico_id')
+                    ->label('Marca')
+                    ->relationship('marcaServicioTecnico', 'nombre')
+                    ->searchable()
+                    ->preload(),
                 SelectFilter::make('tipo_atencion')->label('Atención')->options([
                     'mantenimiento' => 'Mantenimiento',
                     'reparacion' => 'Reparación',

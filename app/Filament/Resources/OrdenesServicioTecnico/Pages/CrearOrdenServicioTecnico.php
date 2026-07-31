@@ -5,6 +5,7 @@ namespace App\Filament\Resources\OrdenesServicioTecnico\Pages;
 use App\Filament\Resources\OrdenesServicioTecnico\OrdenServicioTecnicoResource;
 use App\Jobs\SincronizarArchivosServicioTecnico;
 use App\Models\OrdenServicioTecnico;
+use App\Models\MarcaProveedorServicioTecnico;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,6 +25,9 @@ class CrearOrdenServicioTecnico extends CreateRecord
         $this->archivosTemporales = array_values(array_filter($data['archivos_temporales'] ?? []));
         unset($data['archivos_temporales']);
         $data['estado'] = 'ingresado';
+        $data['marca'] = filled($data['marca_servicio_tecnico_id'] ?? null)
+            ? MarcaProveedorServicioTecnico::find($data['marca_servicio_tecnico_id'])?->nombre
+            : null;
 
         return $data;
     }
