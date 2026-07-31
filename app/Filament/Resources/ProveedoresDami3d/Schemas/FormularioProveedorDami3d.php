@@ -76,7 +76,10 @@ class FormularioProveedorDami3d
                         ]),
                     ]),
                 ]),
-            ])->skippable()->columnSpanFull(),
+            ])
+                ->skippable()
+                ->columnSpanFull()
+                ->extraAttributes(['class' => 'damian-supplier-wizard']),
         ]);
     }
 }

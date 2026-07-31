@@ -13,7 +13,9 @@ class TablaProveedoresDami3d
 {
     public static function configurar(Table $table): Table
     {
-        return $table->columns([
+        return $table
+            ->extraAttributes(['class' => 'damian-supplier-table'])
+            ->columns([
             TextColumn::make('codigo')->label('Código')->searchable()->sortable()->weight('semibold'),
             TextColumn::make('razon_social')->label('Proveedor')->description(fn($record)=>$record->nombre_comercial ?: $record->numero_documento)->searchable(['razon_social','nombre_comercial','numero_documento','whatsapp'])->wrap(),
             TextColumn::make('categorias.nombre')->label('Materiales')->badge()->limitList(2)->expandableLimitedList(),
