@@ -4,12 +4,16 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\DamiOrders\DamiOrderResource;
 use App\Filament\Resources\Printers\PrinterResource;
+use App\Filament\Resources\ProveedoresDami3d\ProveedorDami3dResource;
+use App\Filament\Resources\CategoriasProveedorDami3d\CategoriaProveedorDami3dResource;
 use App\Filament\Resources\OrdenesServicioTecnico\OrdenServicioTecnicoResource;
 use App\Filament\Resources\SolicitudesAutomation\SolicitudAutomationResource;
 use App\Filament\Resources\SolicitudesInvestiga\SolicitudInvestigaResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Http\Responses\LoginResponse;
 use App\Models\Printer;
+use App\Models\ProveedorDami3d;
+use App\Models\CategoriaProveedorDami3d;
 use App\Models\OrdenServicioTecnico;
 use App\Models\SolicitudAutomation;
 use App\Models\SolicitudInvestiga;
@@ -373,6 +377,38 @@ class SupervisorAccessTest extends TestCase
         $this->get(OrdenServicioTecnicoResource::getUrl('view', ['record' => $orden]))->assertOk();
         $this->get(OrdenServicioTecnicoResource::getUrl('edit', ['record' => $orden]))->assertForbidden();
         $this->get('/admin')->assertOk()->assertSee('Servicio Técnico');
+    }
+
+    public function test_dami_3d_supervisor_can_manage_suppliers_without_sensitive_configuration(): void
+    {
+        $supervisor=User::factory()->create(['role'=>'dami_3d','is_active'=>true]);
+        $this->actingAs($supervisor);
+        $this->assertTrue(ProveedorDami3dResource::canViewAny());
+        $this->assertTrue(ProveedorDami3dResource::canCreate());
+        $this->assertFalse(CategoriaProveedorDami3dResource::canViewAny());
+        $this->get(ProveedorDami3dResource::getUrl('create'))->assertOk()->assertSee('Qué suministra')->assertDontSee('Datos bancarios restringidos');
+
+        $proveedor=ProveedorDami3d::create(['tipo'=>'empresa','razon_social'=>'Filamentos de prueba SAC','tipo_documento'=>'ruc','numero_documento'=>'20123456789','whatsapp'=>'999888777','estado'=>'evaluacion']);
+        $categoria=CategoriaProveedorDami3d::query()->first();
+        $proveedor->categorias()->attach($categoria);
+
+        $this->assertMatchesRegularExpression('/^PROV-\d{4}-\d{4}$/',$proveedor->codigo);
+        $this->get(ProveedorDami3dResource::getUrl())->assertOk()->assertSee('Proveedores de DAMI 3D');
+        $this->get(ProveedorDami3dResource::getUrl('view',['record'=>$proveedor]))->assertOk()->assertSee('Filamentos de prueba SAC')->assertSee('Registrar producto')->assertDontSee('Cambiar estado');
+        $this->get(ProveedorDami3dResource::getUrl('edit',['record'=>$proveedor]))->assertOk()->assertDontSee('Datos bancarios restringidos');
+    }
+
+    public function test_gerencia_has_full_supplier_configuration_access(): void
+    {
+        $gerencia=User::factory()->create(['role'=>'gerencia','is_active'=>true]);
+        $this->actingAs($gerencia);
+        $this->assertTrue(ProveedorDami3dResource::canViewAny());
+        $this->assertTrue(CategoriaProveedorDami3dResource::canViewAny());
+        $this->get(CategoriaProveedorDami3dResource::getUrl())->assertOk();
+
+        $proveedor=ProveedorDami3d::create(['tipo'=>'distribuidor','razon_social'=>'Proveedor gerencial','estado'=>'activo']);
+        $this->get(ProveedorDami3dResource::getUrl('view',['record'=>$proveedor]))->assertOk()->assertSee('Cambiar estado');
+        $this->get(ProveedorDami3dResource::getUrl('edit',['record'=>$proveedor]))->assertOk()->assertSee('Datos bancarios restringidos');
     }
 
     public function test_login_discards_previous_forbidden_destination_and_opens_dashboard(): void
