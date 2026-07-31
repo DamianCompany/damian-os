@@ -6,6 +6,7 @@ use App\Filament\Resources\ProveedoresDami3d\ProveedorDami3dResource;
 use App\Jobs\SincronizarDocumentosProveedorDami3d;
 use App\Models\ProductoProveedorDami3d;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -24,12 +25,14 @@ class VerProveedorDami3d extends ViewRecord
 
     public function getTitle(): string { return $this->record->razon_social; }
     public function getSubheading(): ?string { return $this->record->codigo.' · Proveedor DAMI 3D'; }
+    public function getBreadcrumb(): string { return 'Ficha'; }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('whatsapp')->label('Contactar por WhatsApp')->icon('heroicon-o-chat-bubble-left-right')->color('success')->visible(fn()=>filled($this->record->whatsapp))->url(fn()=>'https://wa.me/'.preg_replace('/\D+/','',$this->record->whatsapp))->openUrlInNewTab(),
             Action::make('producto')->label('Registrar producto')->icon('heroicon-o-plus')->color('success')->schema($this->camposProducto())->action(function(array $data):void { $this->record->productos()->create($data+['precio_actualizado_en'=>now()]); $this->actividad('Producto registrado',$data['nombre']); $this->ok('Producto registrado'); }),
+            ActionGroup::make([
             Action::make('precio')->label('Actualizar precio')->icon('heroicon-o-arrow-trending-up')->color('info')->visible(fn()=> $this->record->productos()->exists())->schema([
                 Select::make('producto_id')->label('Producto')->options(fn()=> $this->record->productos()->where('activo',true)->pluck('nombre','id'))->required()->searchable(),
                 TextInput::make('precio')->label('Nuevo precio')->prefix('S/')->numeric()->minValue(0)->required(),
@@ -52,7 +55,8 @@ class VerProveedorDami3d extends ViewRecord
                 Select::make('estado')->options(['evaluacion'=>'En evaluación','activo'=>'Activo','suspendido'=>'Suspendido','bloqueado'=>'Bloqueado','inactivo'=>'Inactivo'])->required()->native(false), Textarea::make('motivo')->label('Motivo')->required()->rows(2),
             ])->fillForm(fn()=>['estado'=>$this->record->estado])->action(function(array $data):void { $this->record->update(['estado'=>$data['estado'],'motivo_estado'=>$data['motivo']]); $this->ok('Estado actualizado'); }),
             Action::make('editar')->label('Editar proveedor')->icon('heroicon-o-pencil-square')->size(Size::Large)->url(static::getResource()::getUrl('edit',['record'=>$this->record])),
-            Action::make('regresar')->label('Regresar')->icon('heroicon-o-arrow-left')->size(Size::Large)->url(static::getResource()::getUrl()),
+            ])->label('Más acciones')->icon('heroicon-o-ellipsis-horizontal')->button()->color('gray'),
+            Action::make('regresar')->label('Regresar')->icon('heroicon-o-arrow-left')->color('gray')->url(static::getResource()::getUrl()),
         ];
     }
 
