@@ -148,6 +148,17 @@ class GoogleDriveService
         return $this->findOrCreateFolder($nombre, $ordenFolderId);
     }
 
+    /** @return array{proveedor: string, documentos: string} */
+    public function ensureProveedorDami3dFolder(string $codigo): array
+    {
+        $proveedor = $this->findOrCreateFolder($codigo, config('services.google_drive.proveedores_dami3d_root_folder_id'));
+
+        return [
+            'proveedor' => $proveedor,
+            'documentos' => $this->findOrCreateFolder('DOCUMENTOS', $proveedor),
+        ];
+    }
+
     public function upload(string $absolutePath, string $folderId, ?string $name = null): array
     {
         if (! is_file($absolutePath)) {

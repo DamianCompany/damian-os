@@ -45,6 +45,7 @@ return [
         'investiga_root_folder_id' => env('GOOGLE_DRIVE_INVESTIGA_ROOT_FOLDER_ID'),
         'automation_root_folder_id' => env('GOOGLE_DRIVE_AUTOMATION_ROOT_FOLDER_ID'),
         'servicio_tecnico_root_folder_id' => env('GOOGLE_DRIVE_SERVICIO_TECNICO_ROOT_FOLDER_ID'),
+        'proveedores_dami3d_root_folder_id' => env('GOOGLE_DRIVE_DAMI3D_PROVEEDORES_ROOT_FOLDER_ID'),
     ],
 
 ];
