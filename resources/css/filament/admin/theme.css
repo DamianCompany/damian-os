@@ -1192,6 +1192,104 @@ html.dark .fi-topbar {
     background: #1c3555;
 }
 
+.damian-supplier-profile {
+    overflow: hidden;
+    border: 1px solid #dfe8ea;
+    border-radius: 1.15rem;
+    background: #fff;
+    box-shadow: 0 12px 34px rgb(15 64 79 / 5%);
+}
+
+.dark .damian-supplier-profile {
+    border-color: rgb(49 186 228 / 16%);
+    background: #182b49;
+    box-shadow: 0 16px 40px rgb(0 0 0 / 18%);
+}
+
+.damian-supplier-profile__layout {
+    display: grid;
+    min-width: 0;
+}
+
+.damian-supplier-profile__identity {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+}
+
+.damian-supplier-profile__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid rgb(27 177 227 / 12%);
+}
+
+.dark .damian-supplier-profile__metrics {
+    border-color: rgb(255 255 255 / 9%);
+    background: rgb(15 64 79 / 13%);
+}
+
+.damian-supplier-profile__metrics > div {
+    display: flex;
+    min-width: 0;
+    min-height: 6.5rem;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+}
+
+.damian-supplier-profile__metrics > div + div {
+    border-left: 1px solid rgb(27 177 227 / 12%);
+}
+
+.dark .damian-supplier-profile__metrics > div + div {
+    border-color: rgb(255 255 255 / 9%);
+}
+
+@media (min-width: 1024px) {
+    .damian-supplier-profile__layout {
+        grid-template-columns: minmax(0, 1fr) minmax(27rem, 34%);
+        align-items: stretch;
+    }
+
+    .damian-supplier-profile__identity {
+        align-items: center;
+        padding: 1.75rem 2rem;
+    }
+
+    .damian-supplier-profile__metrics {
+        border-top: 0;
+        border-left: 1px solid rgb(27 177 227 / 12%);
+    }
+
+    .dark .damian-supplier-profile__metrics {
+        border-left-color: rgb(255 255 255 / 9%);
+    }
+}
+
+@media (max-width: 520px) {
+    .damian-supplier-profile__identity {
+        padding: 1.2rem;
+    }
+
+    .damian-supplier-profile__metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .damian-supplier-profile__metrics > div {
+        min-height: auto;
+        padding: .9rem 1rem;
+        text-align: left;
+    }
+
+    .damian-supplier-profile__metrics > div + div {
+        border-top: 1px solid rgb(27 177 227 / 12%);
+        border-left: 0;
+    }
+}
+
 @media (max-width: 767px) {
     .damian-supplier-wizard {
         border-radius: 1rem;

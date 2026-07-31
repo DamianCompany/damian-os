@@ -6,6 +6,7 @@ use App\Filament\Resources\DamiOrders\DamiOrderResource;
 use App\Filament\Resources\Printers\PrinterResource;
 use App\Filament\Resources\ProveedoresDami3d\ProveedorDami3dResource;
 use App\Filament\Resources\ProveedoresDami3d\Pages\CrearProveedorDami3d;
+use App\Filament\Resources\ProveedoresDami3d\Pages\VerProveedorDami3d;
 use App\Filament\Resources\CategoriasProveedorDami3d\CategoriaProveedorDami3dResource;
 use App\Filament\Resources\OrdenesServicioTecnico\OrdenServicioTecnicoResource;
 use App\Filament\Resources\SolicitudesAutomation\SolicitudAutomationResource;
@@ -396,7 +397,29 @@ class SupervisorAccessTest extends TestCase
 
         $this->assertMatchesRegularExpression('/^PROV-\d{4}-\d{4}$/',$proveedor->codigo);
         $this->get(ProveedorDami3dResource::getUrl())->assertOk()->assertSee('Proveedores de DAMI 3D');
-        $this->get(ProveedorDami3dResource::getUrl('view',['record'=>$proveedor]))->assertOk()->assertSee('Filamentos de prueba SAC')->assertSee('Registrar producto')->assertDontSee('Cambiar estado');
+        $this->get(ProveedorDami3dResource::getUrl('view',['record'=>$proveedor]))
+            ->assertOk()
+            ->assertSee('Ficha del proveedor')
+            ->assertSee('Filamentos de prueba SAC')
+            ->assertSee('Registrar producto')
+            ->assertSee('Más acciones')
+            ->assertDontSee('Cambiar estado');
+
+        Livewire::test(VerProveedorDami3d::class, ['record' => $proveedor->getRouteKey()])
+            ->callAction('producto', [
+                'nombre' => 'Filamento PLA blanco',
+                'categoria_id' => $categoria->getKey(),
+                'precio_referencial' => 89.90,
+                'moneda' => 'PEN',
+                'disponibilidad' => 'disponible',
+                'igv_incluido' => true,
+            ])
+            ->assertHasNoActionErrors();
+
+        $this->assertDatabaseHas('productos_proveedor_dami3d', [
+            'proveedor_id' => $proveedor->getKey(),
+            'nombre' => 'Filamento PLA blanco',
+        ]);
         $this->get(ProveedorDami3dResource::getUrl('edit',['record'=>$proveedor]))->assertOk()->assertDontSee('Datos bancarios restringidos');
     }
 

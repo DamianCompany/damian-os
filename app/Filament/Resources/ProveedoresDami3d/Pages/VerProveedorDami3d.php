@@ -23,8 +23,8 @@ class VerProveedorDami3d extends ViewRecord
     protected static string $resource = ProveedorDami3dResource::class;
     protected string $view = 'filament.resources.proveedores-dami3d.pages.ver-proveedor-dami3d';
 
-    public function getTitle(): string { return $this->record->razon_social; }
-    public function getSubheading(): ?string { return $this->record->codigo.' · Proveedor DAMI 3D'; }
+    public function getTitle(): string { return 'Ficha del proveedor'; }
+    public function getSubheading(): ?string { return $this->record->codigo.' · '.$this->record->razon_social; }
     public function getBreadcrumb(): string { return 'Ficha'; }
 
     protected function getHeaderActions(): array

@@ -9,9 +9,9 @@
             <div class="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm font-semibold text-red-600 dark:text-red-300">Este proveedor está {{ strtolower($estado) }}. {{ $proveedor->motivo_estado }}</div>
         @endif
 
-        <section class="damian-order-hero overflow-hidden p-0">
-            <div class="grid lg:grid-cols-[minmax(0,1fr)_auto]">
-                <div class="flex min-w-0 items-start gap-4 p-6 md:p-7">
+        <section class="damian-supplier-profile">
+            <div class="damian-supplier-profile__layout">
+                <div class="damian-supplier-profile__identity">
                     <div class="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#1bb1e3]/10 text-[#1bb1e3] sm:flex dark:bg-[#1bb1e3]/15">
                         <x-filament::icon icon="heroicon-o-building-storefront" class="h-7 w-7" />
                     </div>
@@ -19,7 +19,7 @@
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="damian-status">{{ $estado }}</span>
                             @if($proveedor->principal)<span class="damian-status text-[#22a15e]">Proveedor principal</span>@endif
-                            <span class="text-xs font-semibold uppercase tracking-[.08em] text-[#65738a] dark:text-[#99a5b5]">{{ str($proveedor->tipo)->replace('_',' ')->title() }}</span>
+                            <span class="text-xs font-semibold uppercase tracking-[.08em] text-[#65738a] dark:text-[#99a5b5]">{{ $proveedor->codigo }}</span>
                         </div>
                         <h2 class="mt-3 truncate text-2xl font-bold tracking-[-.035em] text-[#152036] dark:text-[#f3f3f3] md:text-3xl">{{ $proveedor->nombre_comercial ?: $proveedor->razon_social }}</h2>
                         <p class="mt-2 text-sm text-[#65738a] dark:text-[#a5aebd]">
@@ -30,16 +30,16 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 border-t border-[#1bb1e3]/10 lg:min-w-[28rem] lg:border-l lg:border-t-0 dark:border-white/10">
-                    <div class="flex flex-col justify-center px-4 py-5 text-center">
+                <div class="damian-supplier-profile__metrics">
+                    <div>
                         <span class="text-xs font-medium text-[#65738a] dark:text-[#99a5b5]">Productos</span>
                         <strong class="mt-1 text-2xl text-[#152036] dark:text-[#f3f3f3]">{{ $proveedor->productos->count() }}</strong>
                     </div>
-                    <div class="flex flex-col justify-center border-x border-[#1bb1e3]/10 px-4 py-5 text-center dark:border-white/10">
+                    <div>
                         <span class="text-xs font-medium text-[#65738a] dark:text-[#99a5b5]">Categorías</span>
                         <strong class="mt-1 text-2xl text-[#1bb1e3]">{{ $proveedor->categorias->count() }}</strong>
                     </div>
-                    <div class="flex flex-col justify-center px-4 py-5 text-center">
+                    <div>
                         <span class="text-xs font-medium text-[#65738a] dark:text-[#99a5b5]">Calificación</span>
                         <strong class="mt-1 text-2xl text-[#22a15e]">{{ number_format((float)$proveedor->calificacion,1) }}<small class="text-sm"> / 5</small></strong>
                     </div>
