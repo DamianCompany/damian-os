@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Filament\Resources\DamiOrders\DamiOrderResource;
 use App\Filament\Resources\Printers\PrinterResource;
 use App\Filament\Resources\ProveedoresDami3d\ProveedorDami3dResource;
+use App\Filament\Resources\ProveedoresDami3d\Pages\CrearProveedorDami3d;
 use App\Filament\Resources\CategoriasProveedorDami3d\CategoriaProveedorDami3dResource;
 use App\Filament\Resources\OrdenesServicioTecnico\OrdenServicioTecnicoResource;
 use App\Filament\Resources\SolicitudesAutomation\SolicitudAutomationResource;
@@ -22,6 +23,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as LoginResponseContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class SupervisorAccessTest extends TestCase
@@ -396,6 +398,30 @@ class SupervisorAccessTest extends TestCase
         $this->get(ProveedorDami3dResource::getUrl())->assertOk()->assertSee('Proveedores de DAMI 3D');
         $this->get(ProveedorDami3dResource::getUrl('view',['record'=>$proveedor]))->assertOk()->assertSee('Filamentos de prueba SAC')->assertSee('Registrar producto')->assertDontSee('Cambiar estado');
         $this->get(ProveedorDami3dResource::getUrl('edit',['record'=>$proveedor]))->assertOk()->assertDontSee('Datos bancarios restringidos');
+    }
+
+    public function test_dami_3d_supervisor_can_create_a_supplier_from_the_wizard(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'dami_3d', 'is_active' => true]);
+        $categoria = CategoriaProveedorDami3d::query()->firstOrFail();
+
+        $this->actingAs($supervisor);
+
+        Livewire::test(CrearProveedorDami3d::class)
+            ->fillForm([
+                'tipo' => 'distribuidor',
+                'razon_social' => 'Proveedor desde asistente',
+                'categorias' => [$categoria->getKey()],
+                'moneda' => 'PEN',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $proveedor = ProveedorDami3d::query()
+            ->where('razon_social', 'Proveedor desde asistente')
+            ->firstOrFail();
+
+        $this->assertTrue($proveedor->categorias()->whereKey($categoria->getKey())->exists());
     }
 
     public function test_gerencia_has_full_supplier_configuration_access(): void

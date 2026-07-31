@@ -17,7 +17,16 @@ class FormularioProveedorDami3d
     public static function configurar(Schema $schema): Schema
     {
         return $schema->components([
-            Wizard::make([
+            Wizard::make(self::pasos())
+                ->skippable()
+                ->columnSpanFull()
+                ->extraAttributes(['class' => 'damian-supplier-wizard']),
+        ]);
+    }
+
+    public static function pasos(): array
+    {
+        return [
                 Step::make('Proveedor')->icon('heroicon-o-building-storefront')->schema([
                     Section::make('Identificación y contacto')->description('Registra primero cómo identificar y contactar al proveedor.')->schema([
                         Grid::make(['default'=>1,'md'=>2])->schema([
@@ -76,10 +85,6 @@ class FormularioProveedorDami3d
                         ]),
                     ]),
                 ]),
-            ])
-                ->skippable()
-                ->columnSpanFull()
-                ->extraAttributes(['class' => 'damian-supplier-wizard']),
-        ]);
+        ];
     }
 }
