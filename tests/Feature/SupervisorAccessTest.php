@@ -9,14 +9,23 @@ use App\Filament\Resources\ProveedoresDami3d\Pages\CrearProveedorDami3d;
 use App\Filament\Resources\ProveedoresDami3d\Pages\VerProveedorDami3d;
 use App\Filament\Resources\CategoriasProveedorDami3d\CategoriaProveedorDami3dResource;
 use App\Filament\Resources\OrdenesServicioTecnico\OrdenServicioTecnicoResource;
+use App\Filament\Resources\ProveedoresServicioTecnico\Pages\CrearProveedorServicioTecnico;
+use App\Filament\Resources\ProveedoresServicioTecnico\ProveedorServicioTecnicoResource;
+use App\Filament\Resources\CategoriasProveedorServicioTecnico\CategoriaProveedorServicioTecnicoResource;
+use App\Filament\Resources\MarcasProveedorServicioTecnico\MarcaProveedorServicioTecnicoResource;
 use App\Filament\Resources\SolicitudesAutomation\SolicitudAutomationResource;
 use App\Filament\Resources\SolicitudesInvestiga\SolicitudInvestigaResource;
 use App\Filament\Resources\Users\UserResource;
 use App\Http\Responses\LoginResponse;
+use App\Models\DamiOrder;
 use App\Models\Printer;
+use App\Models\ProductoProveedorDami3d;
 use App\Models\ProveedorDami3d;
 use App\Models\CategoriaProveedorDami3d;
 use App\Models\OrdenServicioTecnico;
+use App\Models\CategoriaProveedorServicioTecnico;
+use App\Models\MarcaProveedorServicioTecnico;
+use App\Models\ProveedorServicioTecnico;
 use App\Models\SolicitudAutomation;
 use App\Models\SolicitudInvestiga;
 use App\Models\User;
@@ -317,10 +326,23 @@ class SupervisorAccessTest extends TestCase
         $supervisor = User::factory()->create(['role' => 'servicio_tecnico', 'is_active' => true]);
         $this->actingAs($supervisor);
 
+        $categoria = CategoriaProveedorServicioTecnico::query()->where('nombre', 'Equipos')->firstOrFail();
+        $marca = MarcaProveedorServicioTecnico::query()->where('nombre', 'HONDA')->firstOrFail();
+        $proveedor = ProveedorServicioTecnico::query()->create([
+            'razon_social' => 'Proveedor de la orden',
+            'estado' => 'activo',
+        ]);
+        $proveedor->categorias()->attach($categoria);
+        $proveedor->marcas()->attach($marca);
+
         $orden = OrdenServicioTecnico::query()->create([
             'cliente' => 'Cliente de prueba',
             'telefono' => '999888777',
             'tipo_equipo' => 'Impresora 3D',
+            'categoria_servicio_tecnico_id' => $categoria->getKey(),
+            'marca_servicio_tecnico_id' => $marca->getKey(),
+            'proveedor_servicio_tecnico_id' => $proveedor->getKey(),
+            'marca' => $marca->nombre,
             'tipo_atencion' => 'mantenimiento',
             'falla_reportada' => 'El equipo no enciende.',
             'prioridad' => 'normal',
@@ -338,7 +360,10 @@ class SupervisorAccessTest extends TestCase
         $this->get(OrdenServicioTecnicoResource::getUrl('view', ['record' => $orden]))
             ->assertOk()
             ->assertSee('Iniciar diagnóstico')
-            ->assertSee('Completar información');
+            ->assertSee('Completar información')
+            ->assertSee('Equipos')
+            ->assertSee('HONDA')
+            ->assertSee('Proveedor de la orden');
 
         $this->get(OrdenServicioTecnicoResource::getUrl('edit', ['record' => $orden]))
             ->assertOk()
@@ -362,6 +387,53 @@ class SupervisorAccessTest extends TestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
+    public function test_servicio_tecnico_supervisor_can_manage_technical_suppliers_and_catalogs(): void
+    {
+        $supervisor = User::factory()->create(['role' => 'servicio_tecnico', 'is_active' => true]);
+        $this->actingAs($supervisor);
+
+        $this->assertTrue(ProveedorServicioTecnicoResource::canViewAny());
+        $this->assertTrue(ProveedorServicioTecnicoResource::canCreate());
+        $this->assertTrue(CategoriaProveedorServicioTecnicoResource::canCreate());
+        $this->assertTrue(MarcaProveedorServicioTecnicoResource::canCreate());
+        $this->assertSame(11, CategoriaProveedorServicioTecnico::query()->count());
+        $this->assertSame(9, MarcaProveedorServicioTecnico::query()->count());
+        $this->assertDatabaseHas('categorias_proveedor_servicio_tecnico', ['nombre' => 'Electrónica e IoT']);
+        $this->assertDatabaseHas('marcas_proveedor_servicio_tecnico', ['nombre' => 'Husqvarna']);
+
+        $categoria = CategoriaProveedorServicioTecnico::query()->where('nombre', 'Accesorios y repuestos')->firstOrFail();
+        $marca = MarcaProveedorServicioTecnico::query()->where('nombre', 'HONDA')->firstOrFail();
+
+        Livewire::test(CrearProveedorServicioTecnico::class)
+            ->fillForm([
+                'tipo' => 'distribuidor',
+                'razon_social' => 'Repuestos Técnicos Damian',
+                'contacto_nombre' => 'Asesor técnico',
+                'whatsapp' => '999888777',
+                'categorias' => [$categoria->getKey()],
+                'marcas' => [$marca->getKey()],
+                'productos_principales' => 'Repuestos para motores Honda.',
+                'estado' => 'activo',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $proveedor = ProveedorServicioTecnico::query()->where('razon_social', 'Repuestos Técnicos Damian')->firstOrFail();
+        $this->assertMatchesRegularExpression('/^PST-\d{4}-\d{4}$/', $proveedor->codigo);
+        $this->assertTrue($proveedor->categorias()->whereKey($categoria->getKey())->exists());
+        $this->assertTrue($proveedor->marcas()->whereKey($marca->getKey())->exists());
+
+        $this->get(ProveedorServicioTecnicoResource::getUrl())->assertOk()->assertSee('Proveedores de Servicio Técnico');
+        $this->get(ProveedorServicioTecnicoResource::getUrl('view', ['record' => $proveedor]))
+            ->assertOk()
+            ->assertSee('Ficha del proveedor')
+            ->assertSee('Repuestos Técnicos Damian')
+            ->assertSee('Accesorios y repuestos')
+            ->assertSee('HONDA');
+        $this->get(CategoriaProveedorServicioTecnicoResource::getUrl())->assertOk()->assertSee('Agricultura');
+        $this->get(MarcaProveedorServicioTecnicoResource::getUrl())->assertOk()->assertSee('Stihl');
+    }
+
     public function test_gerencia_can_consult_servicio_tecnico_but_cannot_modify_it(): void
     {
         $gerencia = User::factory()->create(['role' => 'gerencia', 'is_active' => true]);
@@ -377,6 +449,10 @@ class SupervisorAccessTest extends TestCase
         $this->assertTrue(OrdenServicioTecnicoResource::canViewAny());
         $this->assertFalse(OrdenServicioTecnicoResource::canCreate());
         $this->assertFalse(OrdenServicioTecnicoResource::canEdit($orden));
+        $this->assertTrue(ProveedorServicioTecnicoResource::canViewAny());
+        $this->assertFalse(ProveedorServicioTecnicoResource::canCreate());
+        $this->assertFalse(CategoriaProveedorServicioTecnicoResource::canCreate());
+        $this->assertFalse(MarcaProveedorServicioTecnicoResource::canCreate());
         $this->get(OrdenServicioTecnicoResource::getUrl('view', ['record' => $orden]))->assertOk();
         $this->get(OrdenServicioTecnicoResource::getUrl('edit', ['record' => $orden]))->assertForbidden();
         $this->get('/admin')->assertOk()->assertSee('Servicio Técnico');
@@ -420,6 +496,28 @@ class SupervisorAccessTest extends TestCase
             'proveedor_id' => $proveedor->getKey(),
             'nombre' => 'Filamento PLA blanco',
         ]);
+
+        $producto = ProductoProveedorDami3d::query()
+            ->where('proveedor_id', $proveedor->getKey())
+            ->where('nombre', 'Filamento PLA blanco')
+            ->firstOrFail();
+        $impresora = Printer::query()->create([
+            'name' => 'DAMI-3D-TEST',
+            'location' => 'Taller de pruebas',
+            'status' => 'available',
+            'is_active' => true,
+        ]);
+        $orden = DamiOrder::factory()->create([
+            'producto_proveedor_dami3d_id' => $producto->getKey(),
+            'printer_id' => $impresora->getKey(),
+        ]);
+
+        $this->assertSame($proveedor->getKey(), $orden->fresh()->proveedor_dami3d_id);
+        $this->get(DamiOrderResource::getUrl('view', ['record' => $orden]))
+            ->assertOk()
+            ->assertSee('Filamentos de prueba SAC')
+            ->assertSee('Filamento PLA blanco');
+
         $this->get(ProveedorDami3dResource::getUrl('edit',['record'=>$proveedor]))->assertOk()->assertDontSee('Datos bancarios restringidos');
     }
 
