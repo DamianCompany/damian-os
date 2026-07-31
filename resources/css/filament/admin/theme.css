@@ -1192,6 +1192,258 @@ html.dark .fi-topbar {
     background: #1c3555;
 }
 
+/* Servicio Técnico suppliers: compact, practical profile. */
+.damian-technical-supplier-detail {
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+.damian-technical-supplier-profile {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid #dfe8ea;
+    border-radius: 1.15rem;
+    background: #fff;
+    box-shadow: 0 12px 34px rgb(15 64 79 / 5%);
+}
+
+.dark .damian-technical-supplier-profile {
+    border-color: rgb(49 186 228 / 16%);
+    background: #182b49;
+    box-shadow: 0 16px 40px rgb(0 0 0 / 18%);
+}
+
+.damian-technical-supplier-profile__identity {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+}
+
+.damian-technical-supplier-profile__icon {
+    display: grid;
+    width: 3.5rem;
+    height: 3.5rem;
+    flex: 0 0 3.5rem;
+    place-items: center;
+    border-radius: 1rem;
+    color: #1bb1e3;
+    background: rgb(27 177 227 / 10%);
+}
+
+.damian-technical-supplier-profile__identity h2 {
+    margin-top: .7rem;
+    overflow: hidden;
+    color: #152036;
+    font-size: 1.55rem;
+    font-weight: 750;
+    letter-spacing: -.035em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.damian-technical-supplier-profile__identity p {
+    margin-top: .35rem;
+    color: #65738a;
+    font-size: .82rem;
+}
+
+.dark .damian-technical-supplier-profile__identity h2 {
+    color: #f3f3f3;
+}
+
+.dark .damian-technical-supplier-profile__identity p {
+    color: #a5aebd;
+}
+
+.damian-technical-supplier-profile__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid rgb(27 177 227 / 12%);
+}
+
+.damian-technical-supplier-profile__metrics > div {
+    display: flex;
+    min-width: 0;
+    min-height: 6.5rem;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1rem;
+    text-align: center;
+}
+
+.damian-technical-supplier-profile__metrics > div + div {
+    border-left: 1px solid rgb(27 177 227 / 12%);
+}
+
+.damian-technical-supplier-profile__metrics span,
+.damian-technical-supplier-groups > div > span {
+    color: #65738a;
+    font-size: .7rem;
+    font-weight: 650;
+}
+
+.damian-technical-supplier-profile__metrics strong {
+    margin-top: .4rem;
+    overflow-wrap: anywhere;
+    color: #152036;
+    font-size: 1.15rem;
+}
+
+.dark .damian-technical-supplier-profile__metrics {
+    border-color: rgb(255 255 255 / 9%);
+    background: rgb(15 64 79 / 13%);
+}
+
+.dark .damian-technical-supplier-profile__metrics > div + div {
+    border-color: rgb(255 255 255 / 9%);
+}
+
+.dark .damian-technical-supplier-profile__metrics span,
+.dark .damian-technical-supplier-groups > div > span {
+    color: #99a5b5;
+}
+
+.dark .damian-technical-supplier-profile__metrics strong {
+    color: #f3f3f3;
+}
+
+.damian-technical-supplier-groups {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.damian-technical-supplier-groups > div {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #edf2f3;
+}
+
+.dark .damian-technical-supplier-groups > div {
+    border-color: rgb(255 255 255 / 7%);
+}
+
+.damian-technical-supplier-groups > div > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    margin-top: .55rem;
+}
+
+.damian-technical-supplier-groups > div > div > span {
+    border-radius: 999px;
+    padding: .35rem .65rem;
+    color: #168fdd;
+    font-size: .7rem;
+    font-weight: 700;
+    background: rgb(27 177 227 / 10%);
+}
+
+.dark .damian-technical-supplier-groups > div > div > span {
+    color: #31bae4;
+    background: rgb(27 177 227 / 12%);
+}
+
+.damian-technical-supplier-groups p,
+.damian-technical-supplier-groups small {
+    display: block;
+    margin-top: .55rem;
+    color: #34445a;
+    font-size: .8rem;
+    line-height: 1.6;
+}
+
+.dark .damian-technical-supplier-groups p,
+.dark .damian-technical-supplier-groups small {
+    color: #c5cfdb;
+}
+
+.damian-technical-supplier-conditions {
+    display: grid;
+    gap: .8rem;
+    margin-top: 1rem;
+}
+
+.damian-technical-supplier-conditions > div {
+    min-width: 0;
+    border-radius: .8rem;
+    padding: .85rem 1rem;
+    background: #f7fafb;
+}
+
+.dark .damian-technical-supplier-conditions > div {
+    border: 1px solid rgb(49 186 228 / 10%);
+    background: rgb(15 64 79 / 18%);
+}
+
+.damian-technical-supplier-conditions dt {
+    color: #65738a;
+    font-size: .67rem;
+    font-weight: 650;
+}
+
+.damian-technical-supplier-conditions dd {
+    margin-top: .35rem;
+    overflow-wrap: anywhere;
+    color: #26354a;
+    font-size: .8rem;
+    font-weight: 650;
+}
+
+.dark .damian-technical-supplier-conditions dt {
+    color: #99a5b5;
+}
+
+.dark .damian-technical-supplier-conditions dd {
+    color: #e6edf5;
+}
+
+@media (min-width: 768px) {
+    .damian-technical-supplier-conditions {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .damian-technical-supplier-profile {
+        grid-template-columns: minmax(0, 1fr) minmax(27rem, 34%);
+    }
+
+    .damian-technical-supplier-profile__identity {
+        padding: 1.75rem 2rem;
+    }
+
+    .damian-technical-supplier-profile__metrics {
+        border-top: 0;
+        border-left: 1px solid rgb(27 177 227 / 12%);
+    }
+}
+
+@media (max-width: 520px) {
+    .damian-technical-supplier-profile__metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .damian-technical-supplier-profile__metrics > div {
+        min-height: auto;
+        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: .8rem 1rem;
+        text-align: left;
+    }
+
+    .damian-technical-supplier-profile__metrics > div + div {
+        border-top: 1px solid rgb(27 177 227 / 12%);
+        border-left: 0;
+    }
+
+    .damian-technical-supplier-profile__metrics strong {
+        margin-top: 0;
+    }
+}
+
 .damian-supplier-profile {
     overflow: hidden;
     border: 1px solid #dfe8ea;
