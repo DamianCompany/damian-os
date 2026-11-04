@@ -25,8 +25,8 @@ class UsersTable
                     ->label('Perfil')
                     ->badge()
                     ->formatStateUsing(fn ($state): string => match ($state) {
-                        'gerencia' => 'Gerencia',
-                        'dami_3d' => 'Supervisor DAMI 3D',
+                        'gerencia' => 'Administrador',
+                        'dami_3d' => 'Trabajador DAMI 3D',
                         'investiga_lab' => 'Supervisor InvestigaLab',
                         'automation' => 'Supervisor Damian Automation',
                         'servicio_tecnico' => 'Supervisor Servicio Técnico',
@@ -51,8 +51,8 @@ class UsersTable
                 SelectFilter::make('role')
                     ->label('Perfil')
                     ->options([
-                        'gerencia' => 'Gerencia',
-                        'dami_3d' => 'Supervisor DAMI 3D',
+                        'gerencia' => 'Administrador',
+                        'dami_3d' => 'Trabajador DAMI 3D',
                         'investiga_lab' => 'Supervisor InvestigaLab',
                         'automation' => 'Supervisor Damian Automation',
                         'servicio_tecnico' => 'Supervisor Servicio Técnico',

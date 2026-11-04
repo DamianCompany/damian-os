@@ -12,11 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Railway termina HTTPS en su proxy y reenvía la petición a Laravel.
-        // Confiar en sus encabezados permite generar CSS, JS, rutas y cookies
-        // con el esquema HTTPS original.
+        // Direct LAN access trusts no proxy. Optional proxies are configured
+        // in config/trustedproxy.php for deployments behind a reverse proxy.
         $middleware->trustProxies(
-            at: '*',
             headers: Request::HEADER_X_FORWARDED_FOR
                 | Request::HEADER_X_FORWARDED_HOST
                 | Request::HEADER_X_FORWARDED_PORT

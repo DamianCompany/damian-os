@@ -53,8 +53,7 @@ class GestionarOrdenServicioTecnico extends EditRecord
 
     protected function afterSave(): void
     {
-        if (! $this->record->carpeta_drive_id
-            && blank(config('services.google_drive.servicio_tecnico_root_folder_id'))) {
+        if (blank(config('services.google_drive.servicio_tecnico_root_folder_id'))) {
             return;
         }
 

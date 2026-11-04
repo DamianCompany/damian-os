@@ -3,6 +3,13 @@
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
 
+.workshop-input { display: block; width: 100%; min-height: 44px; margin-top: .4rem; padding: .65rem .8rem; border: 1px solid #94a3b866; border-radius: .75rem; background: transparent; color: inherit; }
+.workshop-mic { display: inline-block; margin: .4rem; padding: .4rem .65rem; border: 1px solid #94a3b866; border-radius: .5rem; font-size: .8rem; cursor: pointer; }
+.workshop-mic:disabled { opacity: .6; cursor: default; }
+.workshop-speech-status { display: block; padding: .15rem .4rem; font-size: .75rem; line-height: 1.4; color: #64748b; }
+.dark .workshop-speech-status { color: #a5b4c8; }
+.workshop-shell button { min-height: 40px; }
+
 @theme {
     --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
     --color-damian-card: #182b49;

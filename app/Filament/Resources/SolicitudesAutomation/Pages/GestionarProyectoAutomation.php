@@ -45,7 +45,7 @@ class GestionarProyectoAutomation extends EditRecord
 
     protected function afterSave(): void
     {
-        if (! $this->record->carpeta_drive_id) {
+        if (blank(config('services.google_drive.automation_root_folder_id')) || ! $this->record->carpeta_drive_id) {
             return;
         }
 

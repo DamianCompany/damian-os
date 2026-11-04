@@ -51,6 +51,10 @@ class AdminPanelProvider extends PanelProvider
                 AccountWidget::class,
             ])
             ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => view('filament.components.workshop-scripts'),
+            )
+            ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_AFTER,
                 fn () => view('filament.components.topbar-user-label'),
             )

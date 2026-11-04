@@ -19,7 +19,10 @@ class ExampleTest extends TestCase
 
     public function test_assets_use_https_behind_a_trusted_proxy(): void
     {
+        config(['trustedproxy.proxies' => '127.0.0.1']);
+
         $response = $this
+            ->withServerVariables(['REMOTE_ADDR' => '127.0.0.1'])
             ->withHeaders([
                 'X-Forwarded-Host' => 'os.damiancompany.com.pe',
                 'X-Forwarded-Port' => '443',

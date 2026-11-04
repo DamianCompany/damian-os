@@ -30,7 +30,7 @@ class DamiOrdersTable
                 TextColumn::make('quantity')->label('Cant.')->alignCenter(),
                 TextColumn::make('filament_type')->label('Material')->badge(),
                 TextColumn::make('total_price')->label('Total')->money('PEN')->sortable(),
-                TextColumn::make('profit')->label('Ganancia')->money('PEN')->color(fn ($state) => $state >= 0 ? 'success' : 'danger'),
+                TextColumn::make('profit')->label('Estimación histórica')->money('PEN')->visible(fn () => auth()->user()?->isWorkshopAdmin())->color(fn ($state) => $state >= 0 ? 'success' : 'danger'),
                 TextColumn::make('delivery_date')->label('Entrega')->date('d/m/Y')->sortable(),
                 TextColumn::make('status')->label('Estado')->badge()->formatStateUsing(fn ($state) => match ($state) {
                     'pending' => 'Pendiente',
@@ -78,7 +78,7 @@ class DamiOrdersTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                ])->visible(fn (): bool => auth()->user()?->role === 'dami_3d'),
+                ])->visible(false),
             ]);
     }
 }

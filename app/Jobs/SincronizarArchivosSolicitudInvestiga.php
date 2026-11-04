@@ -60,7 +60,6 @@ class SincronizarArchivosSolicitudInvestiga implements ShouldQueue
                 'sincronizado_drive_en' => now(),
             ]);
 
-            $disk->delete($ruta);
         }
     }
 

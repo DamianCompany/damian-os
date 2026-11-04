@@ -13,10 +13,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'is_active', 'credential_expires_at'])]
+#[Fillable(['name', 'email', 'password', 'role', 'is_active', 'credential_expires_at', 'workshop_restrictions'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, HasAvatar
 {
+    protected static function booted():void
+    {
+        static::updated(function(self $user):void {
+            if (!auth()->id() || !\Illuminate\Support\Facades\Schema::hasTable('workshop_audit')) { return; }
+            $changes=collect($user->getChanges())->except(['password','remember_token','updated_at'])->all();
+            if($changes){ \App\Models\Workshop\Audit::create(['user_id'=>auth()->id(),'action'=>'user_updated','subject'=>'user:'.$user->id,
+                'changes'=>['before'=>collect($user->getRawOriginal())->only(array_keys($changes))->all(),'after'=>$changes],'created_at'=>now()]); }
+        });
+    }
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
@@ -31,6 +40,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'workshop_restrictions' => 'array',
             'credential_expires_at' => 'datetime',
         ];
     }
@@ -39,6 +49,22 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     {
         return $this->is_active
             && (! $this->credential_expires_at || $this->credential_expires_at->isFuture());
+    }
+
+    public function isWorkshopAdmin(): bool
+    {
+        return $this->role === 'gerencia';
+    }
+
+    public function canWorkshop(string $action): bool
+    {
+        if (! $this->is_active || ($this->credential_expires_at && $this->credential_expires_at->isPast())) {
+            return false;
+        }
+        if ($this->isWorkshopAdmin()) { return true; }
+        return $this->role === 'dami_3d'
+            && ! in_array($action, ['configure', 'reports', 'assign_fund', 'review', 'reverse', 'audit'], true)
+            && ! in_array($action, $this->workshop_restrictions ?? [], true);
     }
 
     public function getFilamentAvatarUrl(): ?string

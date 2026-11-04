@@ -1,0 +1,6 @@
+# Copy OUTSIDE the repository, restrict ACL to the backup account.
+[client]
+host=127.0.0.1
+port=3306
+user=damios_backup
+password=REPLACE_LOCALLY

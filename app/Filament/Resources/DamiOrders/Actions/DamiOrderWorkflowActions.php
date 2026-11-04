@@ -26,8 +26,9 @@ class DamiOrderWorkflowActions
             ->modalHeading('¿Iniciar la producción?')
             ->modalDescription('El pedido cambiará de Pendiente a En proceso.')
             ->modalSubmitActionLabel('Sí, iniciar')
-            ->visible(fn (DamiOrder $record): bool => self::isSupervisor() && $record->status === 'pending')
+            ->visible(fn (DamiOrder $record): bool => self::isSupervisor() && ! $record->workshop && $record->status === 'pending')
             ->action(function (DamiOrder $record): void {
+                abort_if($record->workshop, 403, 'Usa las tareas de Operación diaria.');
                 $record->update(['status' => 'in_progress']);
 
                 Notification::make()
@@ -47,7 +48,7 @@ class DamiOrderWorkflowActions
             ->modalHeading('Completar información de producción')
             ->modalDescription('Añade únicamente los datos que quedaron pendientes.')
             ->modalSubmitActionLabel('Guardar información')
-            ->visible(fn (DamiOrder $record): bool => self::isSupervisor() && $record->status !== 'completed')
+            ->visible(fn (DamiOrder $record): bool => self::isSupervisor() && ! $record->workshop && $record->status !== 'completed')
             ->fillForm(fn (DamiOrder $record): array => [
                 'postprocess_hours' => $record->postprocess_hours,
                 'proveedor_dami3d_id' => $record->proveedor_dami3d_id,
@@ -133,6 +134,7 @@ class DamiOrderWorkflowActions
                     ->rules(['extensions:stl,3mf,obj,step,stp,gcode,zip,pdf']),
             ])
             ->action(function (DamiOrder $record, array $data): void {
+                abort_unless(auth()->user()?->role === 'dami_3d' && ! $record->workshop, 403);
                 $record->update([
                     'postprocess_hours' => filled($data['postprocess_hours'] ?? null)
                         ? $data['postprocess_hours']
@@ -169,8 +171,9 @@ class DamiOrderWorkflowActions
             ->modalHeading('¿Completar este pedido?')
             ->modalDescription('Verifica los archivos y tiempos antes de confirmar.')
             ->modalSubmitActionLabel('Sí, completar')
-            ->visible(fn (DamiOrder $record): bool => self::isSupervisor() && $record->status === 'in_progress')
+            ->visible(fn (DamiOrder $record): bool => self::isSupervisor() && ! $record->workshop && $record->status === 'in_progress')
             ->action(function (DamiOrder $record): void {
+                abort_unless(auth()->user()?->role === 'dami_3d' && ! $record->workshop, 403);
                 $record->update(['status' => 'completed']);
 
                 Notification::make()

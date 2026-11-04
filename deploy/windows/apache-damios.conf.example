@@ -1,0 +1,17 @@
+# Include this file from httpd.conf AFTER loading PHP and mod_rewrite.
+# Replace paths and IP. Use this as the only/default virtual host on this port.
+<VirtualHost *:80>
+    ServerName 192.168.1.50
+    DocumentRoot "C:/DAMI-OS/public"
+    <Directory "C:/DAMI-OS">
+        AllowOverride None
+        Require all denied
+    </Directory>
+    <Directory "C:/DAMI-OS/public">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require ip 127.0.0.1 ::1 192.168.1.0/24
+    </Directory>
+    ErrorLog "logs/damios-error.log"
+    CustomLog "logs/damios-access.log" combined
+</VirtualHost>

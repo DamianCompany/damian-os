@@ -43,8 +43,8 @@ class UserForm
                         Select::make('role')
                             ->label('Perfil de acceso')
                             ->options([
-                                'gerencia' => 'Gerencia',
-                                'dami_3d' => 'Supervisor DAMI 3D',
+                                'gerencia' => 'Administrador',
+                                'dami_3d' => 'Trabajador DAMI 3D',
                                 'investiga_lab' => 'Supervisor InvestigaLab',
                                 'automation' => 'Supervisor Damian Automation',
                                 'servicio_tecnico' => 'Supervisor Servicio Técnico',
@@ -59,6 +59,12 @@ class UserForm
                         Toggle::make('is_active')
                             ->label('Acceso habilitado')
                             ->default(true),
+                        \Filament\Forms\Components\CheckboxList::make('workshop_restrictions')
+                            ->label('Restricciones individuales DAMI 3D')
+                            ->helperText('Solo limita al trabajador. No crea perfiles adicionales.')
+                            ->options(['sale'=>'No registrar ventas', 'collect'=>'No registrar cobros', 'customer'=>'No registrar clientes',
+                                'production'=>'No registrar producción', 'task'=>'No crear tareas', 'purchase'=>'No registrar compras / fondos', 'deliver'=>'No registrar entregas'])
+                            ->columns(2),
                     ])
                     ->columns(3),
             ]);

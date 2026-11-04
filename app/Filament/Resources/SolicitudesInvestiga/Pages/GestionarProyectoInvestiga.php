@@ -47,7 +47,7 @@ class GestionarProyectoInvestiga extends EditRecord
 
     protected function afterSave(): void
     {
-        if (! $this->record->carpeta_drive_id) {
+        if (blank(config('services.google_drive.investiga_root_folder_id')) || ! $this->record->carpeta_drive_id) {
             return;
         }
 

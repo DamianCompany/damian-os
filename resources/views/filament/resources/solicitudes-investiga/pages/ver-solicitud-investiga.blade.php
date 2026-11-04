@@ -85,7 +85,9 @@
                 <div class="damian-order-section__heading"><div><h3>Archivos iniciales</h3><p>Documentos recibidos al registrar la solicitud.</p></div></div>
                 <div class="mt-5 space-y-3">
                     @forelse ($solicitud->archivos as $archivo)
-                        @if ($archivo->archivo_drive_url)
+                        @if ($archivo->ruta_temporal && \Illuminate\Support\Facades\Storage::disk('local')->exists($archivo->ruta_temporal))
+<a class="damian-order-file" href="{{ \Illuminate\Support\Facades\Storage::disk('local')->temporaryUrl($archivo->ruta_temporal, now()->addMinutes(15)) }}" target="_blank" rel="noopener"><span>{{ $archivo->nombre_original }}</span><small>Archivo local</small></a>
+@elseif ($archivo->archivo_drive_url)
                             <a class="damian-order-file" href="{{ $archivo->archivo_drive_url }}" target="_blank" rel="noopener"><span>{{ $archivo->nombre_original }}</span><small>Google Drive</small></a>
                         @else
                             <div class="damian-order-file"><span>{{ $archivo->nombre_original }}</span><small>Pendiente de sincronización</small></div>

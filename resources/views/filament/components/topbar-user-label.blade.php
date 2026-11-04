@@ -4,7 +4,7 @@
         $displayName = $user->role === 'gerencia' ? 'Gerencia' : $user->name;
         $roleLabel = match ($user->role) {
             'gerencia' => 'Administración general',
-            'dami_3d' => 'Supervisor DAMI 3D',
+            'dami_3d' => 'Trabajador DAMI 3D',
             'investiga_lab' => 'Supervisor InvestigaLab',
             'automation' => 'Supervisor Damian Automation',
             'servicio_tecnico' => 'Supervisor Servicio Técnico',

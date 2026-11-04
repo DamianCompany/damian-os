@@ -31,14 +31,16 @@
                     <span>Total del pedido</span>
                     <strong>{{ $money($order->total_price) }}</strong>
                 </div>
+                @if(auth()->user()?->isWorkshopAdmin() && ! $order->workshop)
                 <div class="damian-order-kpi">
-                    <span>Costo total</span>
+                    <span>Costo histórico</span>
                     <strong>{{ $money($order->total_cost) }}</strong>
                 </div>
                 <div class="damian-order-kpi damian-order-kpi--profit">
                     <span>Ganancia</span>
                     <strong>{{ $money($order->profit) }}</strong>
                 </div>
+                @endif
             </div>
         </section>
 
@@ -154,10 +156,12 @@
                     </div>
                 </div>
                 <dl class="damian-order-data damian-order-data--money">
+                    @if(auth()->user()?->isWorkshopAdmin() && ! $order->workshop)
                     <div><dt>Costo de filamento</dt><dd>{{ $money($order->filament_cost) }}</dd></div>
                     <div><dt>Electricidad</dt><dd>{{ $money($order->electricity_cost) }}</dd></div>
                     <div><dt>Mano de obra</dt><dd>{{ $money($order->labor_cost) }}</dd></div>
                     <div><dt>Costo total</dt><dd>{{ $money($order->total_cost) }}</dd></div>
+                    @endif
                     <div><dt>Precio unitario</dt><dd>{{ $money($order->unit_sale_price) }}</dd></div>
                     <div><dt>Total del pedido</dt><dd>{{ $money($order->total_price) }}</dd></div>
                     <div><dt>Adelanto</dt><dd>{{ $money($order->advance) }}</dd></div>

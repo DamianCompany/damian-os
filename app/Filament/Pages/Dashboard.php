@@ -163,7 +163,7 @@ class Dashboard extends BaseDashboard
             ],
             'urls' => [
                 'orders' => DamiOrderResource::getUrl(),
-                'createOrder' => DamiOrderResource::getUrl('create'),
+                'createOrder' => Workshop::getUrl(),
                 'filteredOrders' => DamiOrderResource::getUrl(parameters: array_filter([
                     'tableSearch' => trim($this->orderSearch),
                 ])),

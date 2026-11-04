@@ -24,8 +24,8 @@ class SincronizarDocumentosProveedorDami3d implements ShouldQueue
             if(!$documento->ruta_temporal || !$disk->exists($documento->ruta_temporal)) continue;
             $ruta=$documento->ruta_temporal;
             $archivo=$drive->upload($disk->path($ruta),$carpetas['documentos'],$documento->nombre_original);
-            $documento->update(['archivo_drive_id'=>$archivo['id'],'archivo_drive_url'=>$archivo['webViewLink']??"https://drive.google.com/open?id={$archivo['id']}",'ruta_temporal'=>null]);
-            $disk->delete($ruta);
+            $documento->update(['archivo_drive_id'=>$archivo['id'],'archivo_drive_url'=>$archivo['webViewLink']??"https://drive.google.com/open?id={$archivo['id']}"]);
+
         }
     }
     public function failed(?Throwable $exception):void { report($exception); }

@@ -50,7 +50,7 @@ class SincronizarArchivosSolicitudAutomation implements ShouldQueue
                 'archivo_drive_url' => $archivo['webViewLink'] ?? "https://drive.google.com/open?id={$archivo['id']}",
                 'sincronizado_drive_en' => now(),
             ]);
-            $disk->delete($pendiente->ruta_temporal);
+
         }
     }
 

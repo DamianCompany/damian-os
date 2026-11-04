@@ -21,6 +21,14 @@ class ViewDamiOrder extends ViewRecord
         return "Pedido {$this->getRecord()->order_number}";
     }
 
+    public function mount(int|string $record): void
+    {
+        parent::mount($record);
+        if ($this->getRecord()->workshop) {
+            $this->redirect(\App\Filament\Pages\Workshop::getUrl(['search' => $this->getRecord()->order_number]));
+        }
+    }
+
     public function getSubheading(): ?string
     {
         return 'Ficha completa de trazabilidad DAMI 3D';

@@ -4,6 +4,9 @@ use App\Http\Controllers\GoogleDriveAuthorizationController;
 use App\Http\Controllers\CotizacionServicioTecnicoController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/admin/workshop-files/{type}/{id}/{index?}', \App\Http\Controllers\WorkshopAttachmentController::class)
+    ->middleware('auth')->whereNumber('id')->whereNumber('index')->name('workshop.file');
+
 Route::get('/', function () {
     return redirect()->route('filament.admin.auth.login');
 });

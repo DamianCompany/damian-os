@@ -51,22 +51,22 @@ class DamiOrderResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->role === 'dami_3d';
+        return false;
     }
 
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()?->role === 'dami_3d';
+        return auth()->user()?->isWorkshopAdmin() && ! $record->workshop;
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()?->role === 'dami_3d';
+        return false;
     }
 
     public static function canDeleteAny(): bool
     {
-        return auth()->user()?->role === 'dami_3d';
+        return false;
     }
 
     public static function getRelations(): array

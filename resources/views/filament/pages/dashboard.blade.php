@@ -1,4 +1,7 @@
 <x-filament-panels::page>
+    @if (auth()->user()?->canWorkshop('sale') || auth()->user()?->canWorkshop('production') || auth()->user()?->canWorkshop('purchase'))
+        <a href="{{ \App\Filament\Pages\Workshop::getUrl() }}" class="damian-order-section block text-lg font-bold">Abrir operación DAMI 3D → Ventas · Mis trabajos · Producción · Compras · Fondos</a>
+    @endif
     <div class="damian-dashboard space-y-6">
         @if ($isServicioTecnicoSupervisor)
             @include('filament.pages.partials.dashboard-servicio-tecnico')

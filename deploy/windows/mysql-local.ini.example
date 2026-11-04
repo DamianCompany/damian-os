@@ -1,0 +1,4 @@
+# Merge into the existing MySQL server configuration; preserve datadir.
+[mysqld]
+bind-address=127.0.0.1
+mysqlx-bind-address=127.0.0.1

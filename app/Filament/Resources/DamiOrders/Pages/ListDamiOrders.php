@@ -20,8 +20,9 @@ class ListDamiOrders extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()
-                ->label('Crear pedido')
+            \Filament\Actions\Action::make('quickSale')
+                ->label('Venta / pedido rápido')
+                ->url(\App\Filament\Pages\Workshop::getUrl())
                 ->icon('heroicon-o-plus')
                 ->visible(fn (): bool => auth()->user()?->role === 'dami_3d'),
         ];

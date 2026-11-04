@@ -24,6 +24,11 @@ class DamiOrder extends Model
             'delivery_date' => 'date',
             'requires_invoice' => 'boolean',
             'print_minutes' =>'integer',
+            'workshop' => 'boolean',
+            'attachments' => 'array',
+            'design_required' => 'boolean',
+            'design_approved' => 'boolean',
+            'payment_due' => 'date',
         ];
     }
 
@@ -75,6 +80,9 @@ class DamiOrder extends Model
         });
 
         static::saving(function (self $order): void {
+            if ($order->workshop) {
+                return;
+            }
             if (filled($order->producto_proveedor_dami3d_id)) {
                 $order->proveedor_dami3d_id = ProductoProveedorDami3d::query()
                     ->whereKey($order->producto_proveedor_dami3d_id)
